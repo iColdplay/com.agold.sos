@@ -38,6 +38,80 @@
             android:layout_gravity="top|left"
             android:visibility="gone" />
 
+        <LinearLayout
+            android:id="@+id/sliders_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingBottom="16dp"
+            android:paddingLeft="16dp"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingTop="80dp">
+
+            <com.agold.sos.view.SlideView
+                android:id="@+id/slider1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:buttonBackgroundColor="@android:color/white"
+                app:buttonImage="@drawable/ic_call"
+                app:slideBackgroundColor="@color/colorAccent"
+                app:slideText="CALL"
+                app:slideTextColor="@android:color/white" />
+
+            <com.agold.sos.view.SlideView
+                android:id="@+id/slider2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="70dp"
+                app:buttonBackgroundColor="@android:color/white"
+                app:buttonImage="@drawable/ic_sms"
+                app:slideBackgroundColor="@color/colorAccent"
+                app:slideText="SMS"
+                app:slideTextColor="@android:color/white"
+                app:strokeColor="@color/colorAccent"/>
+
+
+            <com.agold.sos.view.SlideView
+                android:id="@+id/slider3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="70dp"
+                app:buttonBackgroundColor="@android:color/white"
+                app:buttonImage="@drawable/ic_sos"
+                app:slideBackgroundColor="@color/colorAccent"
+                app:slideText="SOS"
+                app:slideTextColor="@android:color/white"
+                app:strokeColor="@color/colorAccent"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/null_contact_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:weightSum="1">
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.4"
+                android:gravity="bottom|center"
+                android:text="未添加紧急联系人"
+                android:textSize="26sp" />
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.62"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:text="添加"
+                android:textColor="@color/colorAccent"
+                android:textSize="20sp" />
+        </LinearLayout>
 
     </FrameLayout>
 

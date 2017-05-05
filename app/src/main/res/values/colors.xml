@@ -8,4 +8,12 @@
     <color name="darkgrey">#C0C0C0</color>
     <color name="white">#FFFFFF</color>
     <color name="red">#FF0000</color>
+    <color name="slider_color_default">#3F51B5</color>
+    <color name="button_color_default">#FFFFFF</color>
+    <color name="stroke_color_default">#FFFFFF</color>
+    <color name="backgroundColor">#E8E8E0</color>
+    <color name="backgroundColorPress">#DBDBD3</color>
+    <color name="red_press">#990000</color>
+    <color name="dark_gray">#4C535B</color>
+    <color name="dark_gray_press">#ff7e8a97</color>
 </resources>

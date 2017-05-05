@@ -1,18 +1,31 @@
 package com.agold.sos;
 import com.agold.sos.sensor.SensorEventHelper;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 
+import com.agold.sos.services.CallService;
+import com.agold.sos.services.SmsService;
+import com.agold.sos.services.ClearService;
 import com.agold.sos.utils.Utils;
+import com.agold.sos.view.SlideView;
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
@@ -54,6 +67,13 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
     public static final String LOCATION_MARKER_FLAG = "mylocation";
     private static String location_info = null;
 
+    private LinearLayout mSildeLayout;
+    private LinearLayout mNullContactLayout;
+
+    private SlideView callSlideView;
+    private SlideView smsSlideView;
+    private SlideView sosSlideView;
+
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -62,18 +82,42 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_home:
+                    if(mapView != null){
+                        mapView.setVisibility(View.VISIBLE);
+                    }
+                    if(mSildeLayout != null){
+                        mSildeLayout.setVisibility(View.INVISIBLE);
+                    }
+                    if(mNullContactLayout != null){
+                        mNullContactLayout.setVisibility(View.INVISIBLE);
+                    }
 
                     return true;
                 case R.id.navigation_dashboard:
-
+                    if(mNullContactLayout != null){
+                        mNullContactLayout.setVisibility(View.VISIBLE);
+                    }
+                    if(mSildeLayout != null){
+                        mSildeLayout.setVisibility(View.INVISIBLE);
+                    }
+                    if(mapView != null){
+                        mapView.setVisibility(View.INVISIBLE);
+                    }
                     return true;
                 case R.id.navigation_notifications:
-
+                    if(mSildeLayout != null){
+                        mSildeLayout.setVisibility(View.VISIBLE);
+                    }
+                    if(mapView != null){
+                        mapView.setVisibility(View.INVISIBLE);
+                    }
+                    if(mNullContactLayout != null){
+                        mNullContactLayout.setVisibility(View.INVISIBLE);
+                    }
                     return true;
             }
             return false;
         }
-
     };
 
     public MainActivity() {
@@ -81,18 +125,73 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //全屏显示
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         super.onCreate(savedInstanceState);
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            android.util.Log.i("ly20170427", " return by permission" + "CALL_PHONE");
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            android.util.Log.i("ly20170427", " return by permission" + "ACCESS_COARSE_LOCATION");
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
+            android.util.Log.i("ly20170427", " return by permission" + "INTERNET");
+        }
+
         setContentView(R.layout.activity_main);
+
+        mSildeLayout = (LinearLayout) findViewById(R.id.sliders_view);
+        mSildeLayout.setVisibility(View.INVISIBLE);
+
+        mNullContactLayout = (LinearLayout) findViewById(R.id.null_contact_layout);
+        mNullContactLayout.setVisibility(View.INVISIBLE);
+
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         mapView = (MapView) findViewById(R.id.map);
         mapView.onCreate(savedInstanceState);
         init();
-
         android.util.Log.i("ly20170427","SHA1-->"+ Utils.getSHA1(this));
 
+        callSlideView = ((SlideView) findViewById(R.id.slider1));
+        callSlideView.setOnSlideCompleteListener(new SlideView.OnSlideCompleteListener() {
+            @Override
+            public void onSlideComplete(SlideView slideView) {
+                Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                vibrator.vibrate(600);
+                android.util.Log.i("ly20170418","slider 1 complete");
+                Intent callService = new Intent(getApplicationContext(),CallService.class);
+                startService(callService);
+            }
+        });
 
+        smsSlideView = ((SlideView) findViewById(R.id.slider2));
+        smsSlideView.setOnSlideCompleteListener(new SlideView.OnSlideCompleteListener() {
+            @Override
+            public void onSlideComplete(SlideView slideView) {
+                Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                vibrator.vibrate(600);
+                android.util.Log.i("ly20170418","slider 2 complete");
+                Intent smsService = new Intent(getApplicationContext(),SmsService.class);
+                startService(smsService);
+            }
+        });
+
+        sosSlideView = ((SlideView) findViewById(R.id.slider3));
+        sosSlideView.setOnSlideCompleteListener(new SlideView.OnSlideCompleteListener() {
+            @Override
+            public void onSlideComplete(SlideView slideView) {
+                Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                vibrator.vibrate(600);
+                android.util.Log.i("ly20170418","slider 3 complete");
+                Intent sosService = new Intent(getApplicationContext(),ClearService.class);
+                startService(sosService);
+            }
+        });
     }
 
     /**
@@ -122,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
      */
     private void setUpMap() {
         aMap.setLocationSource(this);// 设置定位监听
-        aMap.getUiSettings().setMyLocationButtonEnabled(true);// 设置默认定位按钮是否显示
+        aMap.getUiSettings().setMyLocationButtonEnabled(false);// 设置默认定位按钮是否显示
         aMap.setMyLocationEnabled(true);// 设置为true表示显示定位层并可触发定位，false表示隐藏定位层并不可触发定位，默认是false
         aMap.setMyLocationType(AMap.LOCATION_TYPE_LOCATE); // 设置定位的类型为定位模式 ，可以由定位、跟随或地图根据面向方向旋转几种
     }
