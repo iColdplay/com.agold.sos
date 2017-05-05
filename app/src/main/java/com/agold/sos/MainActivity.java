@@ -1,25 +1,37 @@
 package com.agold.sos;
+import com.agold.sos.database.NumberProvider;
 import com.agold.sos.sensor.SensorEventHelper;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.widget.Toast;
 
 import com.agold.sos.services.CallService;
 import com.agold.sos.services.SmsService;
@@ -43,6 +55,7 @@ import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MarkerOptions;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements LocationSource,
@@ -50,6 +63,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
 
     private TextView mTextMessage;
     private String key;
+    private Context mContext;
+    private NumberProvider mNumberprovider;
 
     private AMap aMap;
     private MapView mapView;
@@ -68,11 +83,19 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
     private static String location_info = null;
 
     private LinearLayout mSildeLayout;
-    private LinearLayout mNullContactLayout;
-
     private SlideView callSlideView;
     private SlideView smsSlideView;
     private SlideView sosSlideView;
+
+    private LinearLayout mNullContactLayout;
+    private TextView addContact;
+
+    private RecyclerView recyclerView;
+    private RecyclerViewAdapter mAdapter;
+    private ArrayList<String> mDatas;
+    private ArrayList<String> mNames;
+    private Cursor mCursor;
+
 
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -91,7 +114,9 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                     if(mNullContactLayout != null){
                         mNullContactLayout.setVisibility(View.INVISIBLE);
                     }
-
+                    if(recyclerView != null){
+                        recyclerView.setVisibility(View.INVISIBLE);
+                    }
                     return true;
                 case R.id.navigation_dashboard:
                     if(mNullContactLayout != null){
@@ -103,6 +128,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                     if(mapView != null){
                         mapView.setVisibility(View.INVISIBLE);
                     }
+                    refreshContactFrag();
                     return true;
                 case R.id.navigation_notifications:
                     if(mSildeLayout != null){
@@ -113,6 +139,9 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                     }
                     if(mNullContactLayout != null){
                         mNullContactLayout.setVisibility(View.INVISIBLE);
+                    }
+                    if(recyclerView != null){
+                        recyclerView.setVisibility(View.INVISIBLE);
                     }
                     return true;
             }
@@ -132,6 +161,13 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
 
         super.onCreate(savedInstanceState);
 
+        IntentFilter notifier = new IntentFilter();
+        notifier.addAction("agold.sos.should.refresh");
+        this.registerReceiver(mBroadcastReceiver,notifier);
+
+        mContext = this;
+        mNumberprovider = new NumberProvider(this);
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
             android.util.Log.i("ly20170427", " return by permission" + "CALL_PHONE");
         }
@@ -149,6 +185,58 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
 
         mNullContactLayout = (LinearLayout) findViewById(R.id.null_contact_layout);
         mNullContactLayout.setVisibility(View.INVISIBLE);
+
+        addContact = (TextView) findViewById(R.id.text_view_add);
+        addContact.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                android.util.Log.i("ly20170505","MainActivity onCreate click addContact");
+                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                View addContact = getLayoutInflater().inflate(R.layout.add_contact,null);
+                final EditText editNumber = (EditText) addContact.findViewById(R.id.et_number);
+                final EditText editName = (EditText)addContact.findViewById(R.id.et_name);
+                builder.setView(addContact);
+                builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mNumberprovider.open();
+                        android.util.Log.i("ly20170419","now we click the ok button");
+                        String name = null;
+                        String number = null;
+                        if(editName.getText() != null){
+                            name = editName.getText().toString();
+                            android.util.Log.i("ly20170505","now we set the data name --->"+name);
+                        }
+                        if(editNumber.getText() != null){
+                            number = editNumber.getText().toString();
+                        }
+                        if(number != null && !TextUtils.isEmpty(number)){
+                            Long insertResult = mNumberprovider.insertData(name,number,1);
+                            if(insertResult > 0){
+                                Toast.makeText(mContext,"OK",Toast.LENGTH_SHORT).show();
+                            }else{
+                                Toast.makeText(mContext,"FAIL",Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        mNumberprovider.close();
+                        refreshContactFrag();
+
+                    }
+                });
+                builder.create().show();
+            }
+        });
+
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
+        recyclerView.setVisibility(View.INVISIBLE);
+        mDatas = new ArrayList<String>();
+        mNames = new ArrayList<String>();
+        initData();
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mAdapter = new RecyclerViewAdapter(mContext, mDatas,mNames);
+        mAdapter.setMode(com.daimajia.swipe.util.Attributes.Mode.Single);
+        recyclerView.setAdapter(mAdapter);
+        recyclerView.setOnScrollListener(onScrollListener);
 
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
@@ -192,6 +280,81 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                 startService(sosService);
             }
         });
+    }
+
+    public void refreshContactFrag(){
+        boolean emptyContact = true;
+        mNumberprovider.open();
+        if(mCursor != null){
+            mCursor.close();
+        }
+        mCursor = mNumberprovider.query();
+        if(mCursor != null){
+            if(mCursor.getCount() > 0) {
+                emptyContact = false;
+                android.util.Log.i("20170505", "now we think the database is not empty");
+            }
+        }
+        if(!emptyContact){
+            if(mNullContactLayout != null){
+                mNullContactLayout.setVisibility(View.INVISIBLE);
+            }
+            if(recyclerView != null){
+                initData();
+                recyclerView.setAdapter(mAdapter);
+                recyclerView.setVisibility(View.VISIBLE);
+            }
+        }else{
+            if(mNullContactLayout != null){
+                mNullContactLayout.setVisibility(View.VISIBLE);
+            }
+            if(recyclerView != null){
+                recyclerView.setVisibility(View.INVISIBLE);
+            }
+        }
+    }
+    /**
+     * Substitute for our onScrollListener for RecyclerView
+     */
+    RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
+        @Override
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            super.onScrollStateChanged(recyclerView, newState);
+            Log.e("ListView", "onScrollStateChanged");
+        }
+
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            super.onScrolled(recyclerView, dx, dy);
+            // Could hide open views here if you wanted. //
+        }
+    };
+
+    private void initData(){
+        android.util.Log.i("ly20170504","initData");
+        mNumberprovider.open();
+        if(mCursor != null){
+            mCursor.close();
+        }
+        mCursor = mNumberprovider.query();
+        if(mCursor != null){
+            mDatas.clear();
+            mNames.clear();
+            mCursor.moveToFirst();
+            for(int i = 0;i < mCursor.getCount();i++){
+                android.util.Log.i("ly20170504","initData contact number -->"+mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NUM)));
+                android.util.Log.i("ly20170504","initData contact name-->"+mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NAME)));
+                mDatas.add(""+mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NUM)));
+                if(mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NAME)).isEmpty()){
+                    mNames.add("该联系人未设置姓名");
+                }else {
+                    mNames.add(mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NAME)));
+                }
+                mCursor.moveToNext();
+            }
+        }
+        mCursor.close();
+        mNumberprovider.close();
     }
 
     /**
@@ -412,4 +575,14 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         }
     }
 
+    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            android.util.Log.i("ly20170505","receive a broadcast -->"+intent.getAction());
+            initData();
+            if(mNullContactLayout.getVisibility() == View.VISIBLE || recyclerView.getVisibility() == View.VISIBLE){
+                refreshContactFrag();
+            }
+        }
+    };
 }
