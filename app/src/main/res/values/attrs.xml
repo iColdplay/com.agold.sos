@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="slideBackgroundColor" format="color"/>
+    <attr name="buttonBackgroundColor" format="color"/>
+    <attr name="buttonImage" format="reference"/>
+    <attr name="buttonImageDisabled" format="reference"/>
+    <attr name="strokeColor" format="color"/>
+    <attr name="slideText" format="string"/>
+    <attr name="slideTextColor" format="color"/>
+    <attr name="reverseSlide" format="boolean"/>
+    <attr name="animateSlideText" format="boolean"/>
+
+    <declare-styleable name="SlideView">
+        <attr name="slideBackgroundColor"/>
+        <attr name="buttonBackgroundColor"/>
+        <attr name="buttonImage"/>
+        <attr name="buttonImageDisabled"/>
+        <attr name="strokeColor"/>
+        <attr name="slideText"/>
+        <attr name="slideTextColor"/>
+        <attr name="reverseSlide"/>
+        <attr name="animateSlideText"/>
+    </declare-styleable>
+    
+        <declare-styleable name="SwipeLayout">
+        <attr name="drag_edge">
+            <flag name="left" value="1" />
+            <flag name="right" value="2" />
+            <flag name="top" value="4" />
+            <flag name="bottom" value="8" />
+        </attr>
+        <attr name="leftEdgeSwipeOffset" format="dimension" />
+        <attr name="rightEdgeSwipeOffset" format="dimension" />
+        <attr name="topEdgeSwipeOffset" format="dimension" />
+        <attr name="bottomEdgeSwipeOffset" format="dimension" />
+        <attr name="show_mode" format="enum">
+            <enum name="lay_down" value="0" />
+            <enum name="pull_out" value="1" />
+        </attr>
+        <attr name="clickToClose" format="boolean" />
+    </declare-styleable>
+
+</resources>

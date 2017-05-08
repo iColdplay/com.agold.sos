@@ -177,6 +177,9 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
             android.util.Log.i("ly20170427", " return by permission" + "INTERNET");
         }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            android.util.Log.i("ly20170505", " return by permission" + "ACCESS_FINE_LOCATION");
+        }
 
         setContentView(R.layout.activity_main);
 
