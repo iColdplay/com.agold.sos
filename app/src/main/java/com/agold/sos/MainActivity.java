@@ -40,6 +40,7 @@ import com.agold.sos.services.ClearService;
 import com.agold.sos.utils.PermissionHelper;
 import com.agold.sos.utils.Utils;
 import com.agold.sos.view.SlideView;
+import com.agold.sos.view.RecycleViewDivider;
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
@@ -293,6 +294,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         mNames = new ArrayList<String>();
         initData();
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.addItemDecoration(new RecycleViewDivider(this,LinearLayoutManager.HORIZONTAL,R.drawable.divider_bg01));
         mAdapter = new RecyclerViewAdapter(mContext, mDatas,mNames);
         mAdapter.setMode(com.daimajia.swipe.util.Attributes.Mode.Single);
         recyclerView.setAdapter(mAdapter);

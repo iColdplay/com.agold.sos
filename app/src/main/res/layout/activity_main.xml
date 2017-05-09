@@ -131,13 +131,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
                 android:paddingRight="10dp"
                 android:paddingBottom="10dp"
                 android:paddingLeft="10dp"
                 fab:menu_labels_ellipsize="end"
                 fab:menu_labels_singleLine="true"
-                fab:menu_backgroundColor="#ccffffff"
-                fab:menu_labels_position="right">
+                fab:menu_backgroundColor="#ccffffff">
 
                 <com.github.clans.fab.FloatingActionButton
                     android:id="@+id/fab_1"
