@@ -37,6 +37,7 @@ import android.widget.Toast;
 import com.agold.sos.services.CallService;
 import com.agold.sos.services.SmsService;
 import com.agold.sos.services.ClearService;
+import com.agold.sos.utils.PermissionHelper;
 import com.agold.sos.utils.Utils;
 import com.agold.sos.view.SlideView;
 import com.amap.api.location.AMapLocation;
@@ -60,6 +61,7 @@ import com.github.clans.fab.FloatingActionMenu;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements LocationSource,
         AMapLocationListener{
@@ -102,6 +104,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
     private FloatingActionMenu fab_menu;
     private FloatingActionButton fab1;
     private RelativeLayout relativeLayout;
+
+    private boolean mAllGranted;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -298,7 +302,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         mapView = (MapView) findViewById(R.id.map);
         mapView.onCreate(savedInstanceState);
-        init();
+        //init();
         android.util.Log.i("ly20170427","SHA1-->"+ Utils.getSHA1(this));
 
         callSlideView = ((SlideView) findViewById(R.id.slider1));
@@ -336,6 +340,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                 startService(sosService);
             }
         });
+
+        PermissionHelper.init(this);
     }
 
     public void refreshContactFrag(){
@@ -453,11 +459,53 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
     @Override
     protected void onResume() {
         super.onResume();
-        mapView.onResume();
+
+        if (!mAllGranted) {
+            List<String> permissionsRequestList = PermissionHelper.getInstance().getAllUngrantedPermissions();
+            if (permissionsRequestList.size() > 0) {
+                PermissionHelper.getInstance().requestPermissions(permissionsRequestList, mPermissionCallback);
+            }else {
+                init();
+                mapView.onResume();
+            }
+        }
+
+
         if (mSensorHelper != null) {
             mSensorHelper.registerSensorListener();
         }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions, int[] grantResults) {
+        android.util.Log.i("ly20170509", " is not granted !");
+        PermissionHelper.getInstance().onPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    private PermissionHelper.PermissionCallback mPermissionCallback = new PermissionHelper.PermissionCallback() {
+        public void onPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+            if (grantResults != null && grantResults.length > 0) {
+                mAllGranted = true;
+                for (int i = 0; i < grantResults.length; i++) {
+                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                        mAllGranted = false;
+                        android.util.Log.i("ly20170509", permissions[i] + " is not granted !");
+                        break;
+                    }
+                }
+                if (!mAllGranted) {
+                    String toastStr = "禁止的权限";
+                    Toast.makeText(getApplicationContext(), toastStr, Toast.LENGTH_LONG).show();
+                    finish();
+                }else{
+                    init();
+                    mapView.onResume();
+                }
+            }
+        }
+    };
+
 
     /**
      * 方法必须重写
