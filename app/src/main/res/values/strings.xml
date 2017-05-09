@@ -3,4 +3,5 @@
     <string name="title_home">Location</string>
     <string name="title_dashboard">Contacts</string>
     <string name="title_notifications">Functions</string>
+    <string name="action_settings">Settings</string>
 </resources>

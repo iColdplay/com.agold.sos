@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -114,6 +115,7 @@
         </LinearLayout>
 
         <RelativeLayout
+            android:id="@+id/list_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" >
 
@@ -123,6 +125,29 @@
                 android:dividerHeight="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
+
+            <com.github.clans.fab.FloatingActionMenu
+                android:id="@+id/fab_menu"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentBottom="true"
+                android:paddingRight="10dp"
+                android:paddingBottom="10dp"
+                android:paddingLeft="10dp"
+                fab:menu_labels_ellipsize="end"
+                fab:menu_labels_singleLine="true"
+                fab:menu_backgroundColor="#ccffffff"
+                fab:menu_labels_position="right">
+
+                <com.github.clans.fab.FloatingActionButton
+                    android:id="@+id/fab_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_edit"
+                    fab:fab_size="mini"
+                    fab:fab_label="添加紧急联系人" />
+
+            </com.github.clans.fab.FloatingActionMenu>
 
         </RelativeLayout>
 

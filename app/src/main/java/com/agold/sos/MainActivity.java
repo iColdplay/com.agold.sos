@@ -27,6 +27,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import android.graphics.BitmapFactory;
@@ -53,6 +54,8 @@ import com.amap.api.maps.model.CircleOptions;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MarkerOptions;
+import com.github.clans.fab.FloatingActionButton;
+import com.github.clans.fab.FloatingActionMenu;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -96,7 +99,9 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
     private ArrayList<String> mNames;
     private Cursor mCursor;
 
-
+    private FloatingActionMenu fab_menu;
+    private FloatingActionButton fab1;
+    private RelativeLayout relativeLayout;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -116,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                     }
                     if(recyclerView != null){
                         recyclerView.setVisibility(View.INVISIBLE);
+                        relativeLayout.setVisibility(View.INVISIBLE);
                     }
                     return true;
                 case R.id.navigation_dashboard:
@@ -142,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                     }
                     if(recyclerView != null){
                         recyclerView.setVisibility(View.INVISIBLE);
+                        relativeLayout.setVisibility(View.INVISIBLE);
                     }
                     return true;
             }
@@ -232,6 +239,52 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
         recyclerView.setVisibility(View.INVISIBLE);
+        fab_menu = (FloatingActionMenu) findViewById(R.id.fab_menu);
+        fab1 = (FloatingActionButton) findViewById(R.id.fab_1);
+        fab1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fab_menu.close(true);
+                android.util.Log.i("ly20170509","MainActivity onCreate click fab");
+                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                View addContact = getLayoutInflater().inflate(R.layout.add_contact,null);
+                final EditText editNumber = (EditText) addContact.findViewById(R.id.et_number);
+                final EditText editName = (EditText)addContact.findViewById(R.id.et_name);
+                builder.setView(addContact);
+                builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mNumberprovider.open();
+                        android.util.Log.i("ly20170509","now we click the ok button");
+                        String name = null;
+                        String number = null;
+                        if(editName.getText() != null){
+                            name = editName.getText().toString();
+                            android.util.Log.i("ly20170509","now we set the data name --->"+name);
+                        }
+                        if(editNumber.getText() != null){
+                            number = editNumber.getText().toString();
+                        }
+                        if(number != null && !TextUtils.isEmpty(number)){
+                            Long insertResult = mNumberprovider.insertData(name,number,1);
+                            if(insertResult > 0){
+                                Toast.makeText(mContext,"OK",Toast.LENGTH_SHORT).show();
+                            }else{
+                                Toast.makeText(mContext,"FAIL",Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        mNumberprovider.close();
+                        refreshContactFrag();
+
+                    }
+                });
+                builder.create().show();
+            }
+        });
+
+        relativeLayout = (RelativeLayout) findViewById(R.id.list_view);
+        relativeLayout.setVisibility(View.INVISIBLE);
+
         mDatas = new ArrayList<String>();
         mNames = new ArrayList<String>();
         initData();
@@ -306,6 +359,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                 initData();
                 recyclerView.setAdapter(mAdapter);
                 recyclerView.setVisibility(View.VISIBLE);
+                relativeLayout.setVisibility(View.VISIBLE);
             }
         }else{
             if(mNullContactLayout != null){
@@ -313,6 +367,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
             }
             if(recyclerView != null){
                 recyclerView.setVisibility(View.INVISIBLE);
+                relativeLayout.setVisibility(View.INVISIBLE);
             }
         }
     }
