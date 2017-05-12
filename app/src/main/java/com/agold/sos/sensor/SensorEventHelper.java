@@ -33,10 +33,12 @@ public class SensorEventHelper implements SensorEventListener {
     public void registerSensorListener() {
         mSensorManager.registerListener(this, mSensor,
                 SensorManager.SENSOR_DELAY_NORMAL);
+        android.util.Log.i("ly20170511","SensorEventHelper we register now");
     }
 
     public void unRegisterSensorListener() {
         mSensorManager.unregisterListener(this, mSensor);
+        android.util.Log.i("ly20170511","SensorEventHelper we UNregister now");
     }
 
     public void setCurrentMarker(Marker marker) {
@@ -51,7 +53,9 @@ public class SensorEventHelper implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        android.util.Log.i("ly20170511","SensorEventHelper now onSencorChanged");
         if (System.currentTimeMillis() - lastTime < TIME_SENSOR) {
+            android.util.Log.i("ly20170511","now the return from the interface");
             return;
         }
         switch (event.sensor.getType()) {
@@ -70,8 +74,12 @@ public class SensorEventHelper implements SensorEventListener {
                 mAngle = Float.isNaN(x) ? 0 : x;
                 if (mMarker != null) {
                     mMarker.setRotateAngle(360 - mAngle);
+                }else{
+                    android.util.Log.i("ly20170511","althought this sensor changed but the maker is null");
                 }
+
                 lastTime = System.currentTimeMillis();
+                android.util.Log.i("ly20170511","marker changed");
             }
         }
 

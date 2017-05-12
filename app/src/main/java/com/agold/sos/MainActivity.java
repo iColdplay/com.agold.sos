@@ -1,8 +1,10 @@
 package com.agold.sos;
+
 import com.agold.sos.database.NumberProvider;
 import com.agold.sos.sensor.SensorEventHelper;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -65,7 +67,7 @@ import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements LocationSource,
-        AMapLocationListener{
+        AMapLocationListener {
 
     private TextView mTextMessage;
     private String key;
@@ -83,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
     private static final int FILL_COLOR = Color.argb(10, 0, 0, 180);
     private boolean mFirstFix = false;
     private Marker mLocMarker;
-    private SensorEventHelper mSensorHelper;
+    private SensorEventHelper mSensorHelper = null;
     private Circle mCircle;
     public static final String LOCATION_MARKER_FLAG = "mylocation";
     private static String location_info = null;
@@ -106,7 +108,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
     private FloatingActionButton fab1;
     private RelativeLayout relativeLayout;
 
-    private boolean mAllGranted;
+    private static boolean hasLocationPermission = true;
+
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -115,43 +118,43 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_home:
-                    if(mapView != null){
+                    if (mapView != null) {
                         mapView.setVisibility(View.VISIBLE);
                     }
-                    if(mSildeLayout != null){
+                    if (mSildeLayout != null) {
                         mSildeLayout.setVisibility(View.INVISIBLE);
                     }
-                    if(mNullContactLayout != null){
+                    if (mNullContactLayout != null) {
                         mNullContactLayout.setVisibility(View.INVISIBLE);
                     }
-                    if(recyclerView != null){
+                    if (recyclerView != null) {
                         recyclerView.setVisibility(View.INVISIBLE);
                         relativeLayout.setVisibility(View.INVISIBLE);
                     }
                     return true;
                 case R.id.navigation_dashboard:
-                    if(mNullContactLayout != null){
+                    if (mNullContactLayout != null) {
                         mNullContactLayout.setVisibility(View.VISIBLE);
                     }
-                    if(mSildeLayout != null){
+                    if (mSildeLayout != null) {
                         mSildeLayout.setVisibility(View.INVISIBLE);
                     }
-                    if(mapView != null){
+                    if (mapView != null) {
                         mapView.setVisibility(View.INVISIBLE);
                     }
                     refreshContactFrag();
                     return true;
                 case R.id.navigation_notifications:
-                    if(mSildeLayout != null){
+                    if (mSildeLayout != null) {
                         mSildeLayout.setVisibility(View.VISIBLE);
                     }
-                    if(mapView != null){
+                    if (mapView != null) {
                         mapView.setVisibility(View.INVISIBLE);
                     }
-                    if(mNullContactLayout != null){
+                    if (mNullContactLayout != null) {
                         mNullContactLayout.setVisibility(View.INVISIBLE);
                     }
-                    if(recyclerView != null){
+                    if (recyclerView != null) {
                         recyclerView.setVisibility(View.INVISIBLE);
                         relativeLayout.setVisibility(View.INVISIBLE);
                     }
@@ -166,6 +169,12 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        android.util.Log.i("ly20170511","onCreate method");
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            android.util.Log.i("ly20170511", "no ACCESS_FINE_LOCATION");
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2000);
+            hasLocationPermission = false;
+        }
         //全屏显示
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -175,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
 
         IntentFilter notifier = new IntentFilter();
         notifier.addAction("agold.sos.should.refresh");
-        this.registerReceiver(mBroadcastReceiver,notifier);
+        this.registerReceiver(mBroadcastReceiver, notifier);
 
         mContext = this;
         mNumberprovider = new NumberProvider(this);
@@ -205,32 +214,32 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         addContact.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                android.util.Log.i("ly20170505","MainActivity onCreate click addContact");
+                android.util.Log.i("ly20170505", "MainActivity onCreate click addContact");
                 AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                View addContact = getLayoutInflater().inflate(R.layout.add_contact,null);
+                View addContact = getLayoutInflater().inflate(R.layout.add_contact, null);
                 final EditText editNumber = (EditText) addContact.findViewById(R.id.et_number);
-                final EditText editName = (EditText)addContact.findViewById(R.id.et_name);
+                final EditText editName = (EditText) addContact.findViewById(R.id.et_name);
                 builder.setView(addContact);
                 builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mNumberprovider.open();
-                        android.util.Log.i("ly20170419","now we click the ok button");
+                        android.util.Log.i("ly20170419", "now we click the ok button");
                         String name = null;
                         String number = null;
-                        if(editName.getText() != null){
+                        if (editName.getText() != null) {
                             name = editName.getText().toString();
-                            android.util.Log.i("ly20170505","now we set the data name --->"+name);
+                            android.util.Log.i("ly20170505", "now we set the data name --->" + name);
                         }
-                        if(editNumber.getText() != null){
+                        if (editNumber.getText() != null) {
                             number = editNumber.getText().toString();
                         }
-                        if(number != null && !TextUtils.isEmpty(number)){
-                            Long insertResult = mNumberprovider.insertData(name,number,1);
-                            if(insertResult > 0){
-                                Toast.makeText(mContext,"OK",Toast.LENGTH_SHORT).show();
-                            }else{
-                                Toast.makeText(mContext,"FAIL",Toast.LENGTH_SHORT).show();
+                        if (number != null && !TextUtils.isEmpty(number)) {
+                            Long insertResult = mNumberprovider.insertData(name, number, 1);
+                            if (insertResult > 0) {
+                                Toast.makeText(mContext, "OK", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(mContext, "FAIL", Toast.LENGTH_SHORT).show();
                             }
                         }
                         mNumberprovider.close();
@@ -250,32 +259,32 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
             @Override
             public void onClick(View v) {
                 fab_menu.close(true);
-                android.util.Log.i("ly20170509","MainActivity onCreate click fab");
+                android.util.Log.i("ly20170509", "MainActivity onCreate click fab");
                 AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                View addContact = getLayoutInflater().inflate(R.layout.add_contact,null);
+                View addContact = getLayoutInflater().inflate(R.layout.add_contact, null);
                 final EditText editNumber = (EditText) addContact.findViewById(R.id.et_number);
-                final EditText editName = (EditText)addContact.findViewById(R.id.et_name);
+                final EditText editName = (EditText) addContact.findViewById(R.id.et_name);
                 builder.setView(addContact);
                 builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mNumberprovider.open();
-                        android.util.Log.i("ly20170509","now we click the ok button");
+                        android.util.Log.i("ly20170509", "now we click the ok button");
                         String name = null;
                         String number = null;
-                        if(editName.getText() != null){
+                        if (editName.getText() != null) {
                             name = editName.getText().toString();
-                            android.util.Log.i("ly20170509","now we set the data name --->"+name);
+                            android.util.Log.i("ly20170509", "now we set the data name --->" + name);
                         }
-                        if(editNumber.getText() != null){
+                        if (editNumber.getText() != null) {
                             number = editNumber.getText().toString();
                         }
-                        if(number != null && !TextUtils.isEmpty(number)){
-                            Long insertResult = mNumberprovider.insertData(name,number,1);
-                            if(insertResult > 0){
-                                Toast.makeText(mContext,"OK",Toast.LENGTH_SHORT).show();
-                            }else{
-                                Toast.makeText(mContext,"FAIL",Toast.LENGTH_SHORT).show();
+                        if (number != null && !TextUtils.isEmpty(number)) {
+                            Long insertResult = mNumberprovider.insertData(name, number, 1);
+                            if (insertResult > 0) {
+                                Toast.makeText(mContext, "OK", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(mContext, "FAIL", Toast.LENGTH_SHORT).show();
                             }
                         }
                         mNumberprovider.close();
@@ -294,8 +303,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         mNames = new ArrayList<String>();
         initData();
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.addItemDecoration(new RecycleViewDivider(this,LinearLayoutManager.HORIZONTAL,R.drawable.divider_bg01));
-        mAdapter = new RecyclerViewAdapter(mContext, mDatas,mNames);
+        recyclerView.addItemDecoration(new RecycleViewDivider(this, LinearLayoutManager.HORIZONTAL, R.drawable.divider_bg01));
+        mAdapter = new RecyclerViewAdapter(mContext, mDatas, mNames);
         mAdapter.setMode(com.daimajia.swipe.util.Attributes.Mode.Single);
         recyclerView.setAdapter(mAdapter);
         recyclerView.setOnScrollListener(onScrollListener);
@@ -305,7 +314,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         mapView = (MapView) findViewById(R.id.map);
         mapView.onCreate(savedInstanceState);
         //init();
-        android.util.Log.i("ly20170427","SHA1-->"+ Utils.getSHA1(this));
+        android.util.Log.i("ly20170427", "SHA1-->" + Utils.getSHA1(this));
 
         callSlideView = ((SlideView) findViewById(R.id.slider1));
         callSlideView.setOnSlideCompleteListener(new SlideView.OnSlideCompleteListener() {
@@ -313,8 +322,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
             public void onSlideComplete(SlideView slideView) {
                 Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                 vibrator.vibrate(600);
-                android.util.Log.i("ly20170418","slider 1 complete");
-                Intent callService = new Intent(getApplicationContext(),CallService.class);
+                android.util.Log.i("ly20170418", "slider 1 complete");
+                Intent callService = new Intent(getApplicationContext(), CallService.class);
                 startService(callService);
             }
         });
@@ -325,8 +334,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
             public void onSlideComplete(SlideView slideView) {
                 Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                 vibrator.vibrate(600);
-                android.util.Log.i("ly20170418","slider 2 complete");
-                Intent smsService = new Intent(getApplicationContext(),SmsService.class);
+                android.util.Log.i("ly20170418", "slider 2 complete");
+                Intent smsService = new Intent(getApplicationContext(), SmsService.class);
                 startService(smsService);
             }
         });
@@ -337,48 +346,47 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
             public void onSlideComplete(SlideView slideView) {
                 Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                 vibrator.vibrate(600);
-                android.util.Log.i("ly20170418","slider 3 complete");
-                Intent sosService = new Intent(getApplicationContext(),ClearService.class);
+                android.util.Log.i("ly20170418", "slider 3 complete");
+                Intent sosService = new Intent(getApplicationContext(), ClearService.class);
                 startService(sosService);
             }
         });
-
-        PermissionHelper.init(this);
     }
 
-    public void refreshContactFrag(){
+    public void refreshContactFrag() {
         boolean emptyContact = true;
         mNumberprovider.open();
-        if(mCursor != null){
+        if (mCursor != null) {
             mCursor.close();
         }
         mCursor = mNumberprovider.query();
-        if(mCursor != null){
-            if(mCursor.getCount() > 0) {
+        if (mCursor != null) {
+            if (mCursor.getCount() > 0) {
                 emptyContact = false;
                 android.util.Log.i("20170505", "now we think the database is not empty");
             }
         }
-        if(!emptyContact){
-            if(mNullContactLayout != null){
+        if (!emptyContact) {
+            if (mNullContactLayout != null) {
                 mNullContactLayout.setVisibility(View.INVISIBLE);
             }
-            if(recyclerView != null){
+            if (recyclerView != null) {
                 initData();
                 recyclerView.setAdapter(mAdapter);
                 recyclerView.setVisibility(View.VISIBLE);
                 relativeLayout.setVisibility(View.VISIBLE);
             }
-        }else{
-            if(mNullContactLayout != null){
+        } else {
+            if (mNullContactLayout != null) {
                 mNullContactLayout.setVisibility(View.VISIBLE);
             }
-            if(recyclerView != null){
+            if (recyclerView != null) {
                 recyclerView.setVisibility(View.INVISIBLE);
                 relativeLayout.setVisibility(View.INVISIBLE);
             }
         }
     }
+
     /**
      * Substitute for our onScrollListener for RecyclerView
      */
@@ -396,24 +404,24 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         }
     };
 
-    private void initData(){
-        android.util.Log.i("ly20170504","initData");
+    private void initData() {
+        android.util.Log.i("ly20170504", "initData");
         mNumberprovider.open();
-        if(mCursor != null){
+        if (mCursor != null) {
             mCursor.close();
         }
         mCursor = mNumberprovider.query();
-        if(mCursor != null){
+        if (mCursor != null) {
             mDatas.clear();
             mNames.clear();
             mCursor.moveToFirst();
-            for(int i = 0;i < mCursor.getCount();i++){
-                android.util.Log.i("ly20170504","initData contact number -->"+mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NUM)));
-                android.util.Log.i("ly20170504","initData contact name-->"+mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NAME)));
-                mDatas.add(""+mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NUM)));
-                if(mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NAME)).isEmpty()){
+            for (int i = 0; i < mCursor.getCount(); i++) {
+                android.util.Log.i("ly20170504", "initData contact number -->" + mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NUM)));
+                android.util.Log.i("ly20170504", "initData contact name-->" + mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NAME)));
+                mDatas.add("" + mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NUM)));
+                if (mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NAME)).isEmpty()) {
                     mNames.add("该联系人未设置姓名");
-                }else {
+                } else {
                     mNames.add(mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NAME)));
                 }
                 mCursor.moveToNext();
@@ -427,19 +435,27 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
      * 初始化
      */
     private void init() {
+
         if (aMap == null) {
+            android.util.Log.i("ly20170511","init() aMap is NOT null");
             aMap = mapView.getMap();
-            if(aMap == null){
-                android.util.Log.i("ly20170408","amap is null RETURN");
+            if (aMap == null) {
+                android.util.Log.i("ly20170408", "amap is null RETURN");
                 return;
-            }else{
-                android.util.Log.i("ly20170408","aMap is not NULL");
+            } else {
+                android.util.Log.i("ly20170408", "aMap is not NULL");
             }
             setUpMap();
+        }else{
+            android.util.Log.i("ly20170511","init() aMap is null");
         }
-        mSensorHelper = new SensorEventHelper(this);
-        if (mSensorHelper != null) {
-            mSensorHelper.registerSensorListener();
+        if (mSensorHelper == null) {
+            android.util.Log.i("ly20170511", "now we create the new SensorHelper");
+            mSensorHelper = new SensorEventHelper(this);
+            if (mSensorHelper != null) {
+                android.util.Log.i("ly20170511", "now the SensorHelper is gonna register");
+                mSensorHelper.registerSensorListener();
+            }
         }
         mLocationErrText = (TextView) findViewById(R.id.location_errInfo_text);
         mLocationErrText.setVisibility(View.GONE);
@@ -450,7 +466,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
      */
     private void setUpMap() {
         aMap.setLocationSource(this);// 设置定位监听
-        aMap.getUiSettings().setMyLocationButtonEnabled(false);// 设置默认定位按钮是否显示
+        aMap.getUiSettings().setMyLocationButtonEnabled(true);// 设置默认定位按钮是否显示
         aMap.setMyLocationEnabled(true);// 设置为true表示显示定位层并可触发定位，false表示隐藏定位层并不可触发定位，默认是false
         aMap.setMyLocationType(AMap.LOCATION_TYPE_LOCATE); // 设置定位的类型为定位模式 ，可以由定位、跟随或地图根据面向方向旋转几种
     }
@@ -460,53 +476,54 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
      */
     @Override
     protected void onResume() {
+        android.util.Log.i("ly20170511","onResume method");
         super.onResume();
-
-        if (!mAllGranted) {
-            List<String> permissionsRequestList = PermissionHelper.getInstance().getAllUngrantedPermissions();
-            if (permissionsRequestList.size() > 0) {
-                PermissionHelper.getInstance().requestPermissions(permissionsRequestList, mPermissionCallback);
-            }else {
-                init();
-                mapView.onResume();
-            }
+        android.util.Log.i("ly20170511","onResume we init mapView here");
+        if(hasLocationPermission){
+            init();
         }
-
-
-        if (mSensorHelper != null) {
-            mSensorHelper.registerSensorListener();
+        mapView.onResume();
+        if (mSensorHelper == null) {
+            android.util.Log.i("ly20170511", "now we create the new SensorHelper cause it is null");
+            mSensorHelper = new SensorEventHelper(this);
+            if (mSensorHelper != null) {
+                android.util.Log.i("ly20170511", "now the SensorHelper is gonna register");
+                mSensorHelper.registerSensorListener();
+                mSensorHelper.setCurrentMarker(mLocMarker);//定位图标旋转
+            }
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String[] permissions, int[] grantResults) {
-        android.util.Log.i("ly20170509", " is not granted !");
-        PermissionHelper.getInstance().onPermissionsResult(requestCode, permissions, grantResults);
-    }
 
-    private PermissionHelper.PermissionCallback mPermissionCallback = new PermissionHelper.PermissionCallback() {
-        public void onPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-            if (grantResults != null && grantResults.length > 0) {
-                mAllGranted = true;
-                for (int i = 0; i < grantResults.length; i++) {
-                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                        mAllGranted = false;
-                        android.util.Log.i("ly20170509", permissions[i] + " is not granted !");
-                        break;
-                    }
-                }
-                if (!mAllGranted) {
-                    String toastStr = "禁止的权限";
-                    Toast.makeText(getApplicationContext(), toastStr, Toast.LENGTH_LONG).show();
-                    finish();
-                }else{
-                    init();
-                    mapView.onResume();
-                }
-            }
-        }
-    };
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode,
+//                                           String[] permissions, int[] grantResults) {
+//        android.util.Log.i("ly20170509", " is not granted !");
+//        PermissionHelper.getInstance().onPermissionsResult(requestCode, permissions, grantResults);
+//    }
+//
+//    private PermissionHelper.PermissionCallback mPermissionCallback = new PermissionHelper.PermissionCallback() {
+//        public void onPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+//            if (grantResults != null && grantResults.length > 0) {
+//                mAllGranted = true;
+//                for (int i = 0; i < grantResults.length; i++) {
+//                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+//                        mAllGranted = false;
+//                        android.util.Log.i("ly20170509", permissions[i] + " is not granted !");
+//                        break;
+//                    }
+//                }
+//                if (!mAllGranted) {
+//                    String toastStr = "禁止的权限";
+//                    Toast.makeText(getApplicationContext(), toastStr, Toast.LENGTH_LONG).show();
+//                    finish();
+//                }else{
+//                    init();
+//                    mapView.onResume();
+//                }
+//            }
+//        }
+//    };
 
 
     /**
@@ -554,7 +571,6 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
      */
     @Override
     public void onLocationChanged(AMapLocation amapLocation) {
-        android.util.Log.i("ly20170411","the location changed or we received a callback");
         if (mListener != null && amapLocation != null) {
             if (amapLocation != null && amapLocation.getErrorCode() == 0) {
 
@@ -568,10 +584,10 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                 Date date = new Date(amapLocation.getTime());
                 df.format(date);//定位时间
 
-                android.util.Log.i("20170412","onLocationChanged() location getLocationType -->"+amapLocation.getLocationType());
-                android.util.Log.i("20170412","onLocationChanged() location getLatitude -->"+amapLocation.getLatitude());
-                android.util.Log.i("20170412","onLocationChanged() location getAccuracy -->"+amapLocation.getAccuracy());
-                android.util.Log.i("20170412","onLocationChanged() location time -->"+df.format(date));
+                android.util.Log.i("20170412", "onLocationChanged() location getLocationType -->" + amapLocation.getLocationType());
+                android.util.Log.i("20170412", "onLocationChanged() location getLatitude -->" + amapLocation.getLatitude());
+                android.util.Log.i("20170412", "onLocationChanged() location getAccuracy -->" + amapLocation.getAccuracy());
+                android.util.Log.i("20170412", "onLocationChanged() location time -->" + df.format(date));
 
                 amapLocation.getAddress();//地址，如果option中设置isNeedAddress为false，则没有此结果，网络定位结果中会有地址信息，GPS定位不返回地址信息
                 amapLocation.getCountry();//国家信息
@@ -591,15 +607,16 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                         + amapLocation.getStreet() + ""
                         + amapLocation.getStreetNum());
 
-                android.util.Log.i("20170412","onLocationChanged() location information -->"+buffer.toString());
+                android.util.Log.i("20170412", "onLocationChanged() location information -->" + buffer.toString());
                 location_info = buffer.toString();
 
                 if (!mFirstFix) {
                     mFirstFix = true;
                     addCircle(location, amapLocation.getAccuracy());//添加定位精度圆
                     addMarker(location);//添加定位图标
+                    android.util.Log.i("ly20170511", "use sensor helper to change the direction");
                     mSensorHelper.setCurrentMarker(mLocMarker);//定位图标旋转
-                    aMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location,18));
+                    aMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 18));
                     //mListener.onLocationChanged(amapLocation);//点击定位图标可以将视图移动到定位的位置
                 } else {
                     mCircle.setCenter(location);
@@ -632,7 +649,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
             //设置是否返回位置信息
             mLocationOption.setNeedAddress(true);
             //设置定位循环时间
-            mLocationOption.setInterval(20000);
+            mLocationOption.setInterval(1000);
             //设置定位参数
             mlocationClient.setLocationOption(mLocationOption);
             // 此方法为每隔固定时间会发起一次定位请求，为了减少电量消耗或网络流量消耗，
@@ -676,9 +693,9 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         options.anchor(0.5f, 0.5f);
         options.position(latlng);
         mLocMarker = aMap.addMarker(options);
-        if(location_info != null){
+        if (location_info != null) {
             mLocMarker.setTitle(location_info);
-        }else{
+        } else {
             mLocMarker.setTitle(LOCATION_MARKER_FLAG);
         }
     }
@@ -686,11 +703,27 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            android.util.Log.i("ly20170505","receive a broadcast -->"+intent.getAction());
+            android.util.Log.i("ly20170505", "receive a broadcast -->" + intent.getAction());
             initData();
-            if(mNullContactLayout.getVisibility() == View.VISIBLE || recyclerView.getVisibility() == View.VISIBLE){
+            if (mNullContactLayout.getVisibility() == View.VISIBLE || recyclerView.getVisibility() == View.VISIBLE) {
                 refreshContactFrag();
             }
         }
     };
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 2000) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                Toast.makeText(getApplicationContext(), "No LOCATION Permission", Toast.LENGTH_LONG).show();
+                android.util.Log.i("ly20170511","onRequestPermissionsResult we dont have permission and we finish it");
+                finish();
+            }else{
+                android.util.Log.i("ly20170511","onRequestPermissionsResult we got the permission and we try to refresh the mapview");
+                init();
+                hasLocationPermission = true;
+            }
+        }
+    }
 }
