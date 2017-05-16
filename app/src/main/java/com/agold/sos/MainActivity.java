@@ -450,11 +450,12 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
             android.util.Log.i("ly20170511","init() aMap is null");
         }
         if (mSensorHelper == null) {
-            android.util.Log.i("ly20170511", "now we create the new SensorHelper");
+            android.util.Log.i("ly20170511", "init() now we create the new SensorHelper");
             mSensorHelper = new SensorEventHelper(this);
             if (mSensorHelper != null) {
-                android.util.Log.i("ly20170511", "now the SensorHelper is gonna register");
+                android.util.Log.i("ly20170511", "init() now the SensorHelper is gonna register");
                 mSensorHelper.registerSensorListener();
+                mSensorHelper.setCurrentMarker(mLocMarker);
             }
         }
         mLocationErrText = (TextView) findViewById(R.id.location_errInfo_text);
@@ -483,15 +484,6 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
             init();
         }
         mapView.onResume();
-        if (mSensorHelper == null) {
-            android.util.Log.i("ly20170511", "now we create the new SensorHelper cause it is null");
-            mSensorHelper = new SensorEventHelper(this);
-            if (mSensorHelper != null) {
-                android.util.Log.i("ly20170511", "now the SensorHelper is gonna register");
-                mSensorHelper.registerSensorListener();
-                mSensorHelper.setCurrentMarker(mLocMarker);//定位图标旋转
-            }
-        }
     }
 
 
@@ -558,6 +550,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
     protected void onDestroy() {
         super.onDestroy();
         if (mLocMarker != null) {
+            android.util.Log.i("ly20170516","now we destory mLocMarker");
             mLocMarker.destroy();
         }
         mapView.onDestroy();
