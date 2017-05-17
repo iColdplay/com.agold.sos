@@ -34,7 +34,7 @@ public class Slider extends AppCompatSeekBar {
         android.util.Log.i("ly20170418","Slider onTouchEvent");
         android.util.Log.i("ly20170418","Slider onTouchEvent v-->"+event.toString());
         //同一时间内 只允许单个组件滑动
-        if(event.getPointerId(0) > 1){
+        if(event.getPointerId(0) != 0){
             return false;
         }else {
             if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -45,7 +45,7 @@ public class Slider extends AppCompatSeekBar {
                 }
             } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_POINTER_UP) {//双指事件 回调接口不一样
                 //按照所长要求 减小回调接口的滑动长度要求
-                if (getProgress() > 50) {
+                if (getProgress() > 85) {
                     if (listener != null) listener.onSlideComplete(slideView);
                 }
                 setProgress(0);
