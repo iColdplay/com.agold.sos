@@ -484,6 +484,9 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
             init();
         }
         mapView.onResume();
+        if(mlocationClient != null){
+            mlocationClient.startLocation();
+        }
     }
 
 
@@ -658,12 +661,15 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
      */
     @Override
     public void deactivate() {
-        mListener = null;
-        if (mlocationClient != null) {
+//        mListener = null;
+//        if (mlocationClient != null) {
+//            mlocationClient.stopLocation();
+//            mlocationClient.onDestroy();
+//        }
+//        mlocationClient = null;
+        if(mlocationClient != null){
             mlocationClient.stopLocation();
-            mlocationClient.onDestroy();
         }
-        mlocationClient = null;
     }
 
     private void addCircle(LatLng latlng, double radius) {
