@@ -79,7 +79,8 @@ public class CallService extends Service {
         //check if the emergency number is NULL
         if (numbers.size() == 0) {
             Toast.makeText(this, "NO emergency number", Toast.LENGTH_SHORT).show();
-            stopSelf();
+            //stopSelf();
+            this.onDestroy();
         }
         numberId = 0;
         makeCall();
@@ -107,7 +108,6 @@ public class CallService extends Service {
                 android.util.Log.i("ly20170427", "this is name in data base -->" + mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NAME)));
                 String number = mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NUM));
                 if (!numbers.contains(number)) {
-
                     numbers.add(number);
                 }
                 mCursor.moveToNext();
@@ -119,6 +119,7 @@ public class CallService extends Service {
 
     public void makeCall() {
         android.util.Log.i("ly20170430","we gonna make the call and the numberId is --->"+numberId);
+        android.util.Log.i("ly20170523","here show the number.size()-->"+numbers.size());
         if(numberId < numbers.size()) {
             //这里使用handler是为了解决可能出现拨号沉溺在后台的情况
             new Handler().postDelayed(new Runnable(){
@@ -144,7 +145,8 @@ public class CallService extends Service {
             }, 500);
         }else{
             //在这里 stopService 以便再次使用次service
-            stopSelf();
+            this.onDestroy();
+            //stopSelf();
         }
     }
 

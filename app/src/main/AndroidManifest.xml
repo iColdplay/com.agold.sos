@@ -54,6 +54,24 @@
 
         </service>
 
+        <service android:name=".services.CircularSmsService">
+
+        </service>
+
+        <receiver android:name=".PhoneWindowManagerReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="check.emergency.contact" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".LocateReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="agold.amap.should.locate" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

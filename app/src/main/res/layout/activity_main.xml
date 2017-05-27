@@ -84,6 +84,7 @@
                 app:slideTextColor="@android:color/white"
                 app:strokeColor="@color/colorAccent"/>
 
+
         </LinearLayout>
 
         <LinearLayout
@@ -112,6 +113,8 @@
                 android:text="添加"
                 android:textColor="@color/colorAccent"
                 android:textSize="20sp" />
+
+
         </LinearLayout>
 
         <RelativeLayout

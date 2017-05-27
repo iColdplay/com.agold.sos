@@ -2,15 +2,19 @@ package com.agold.sos.services;
 
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.telephony.SmsManager;
 import android.widget.Toast;
 
-import java.util.ArrayList;
 import com.agold.sos.database.NumberProvider;
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
@@ -18,15 +22,17 @@ import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.model.LatLng;
 
+import java.util.ArrayList;
+
+
+
 import static android.telephony.SmsManager.getDefault;
 
 /**
- * Created by liuyi on 2017/4/30.
- * SmsService 用于实现一次性向所有紧急联系人发送短信
- * 短信内容可以定制
+ * Created by root on 17-5-26.
  */
 
-public class SmsService extends Service {
+public class CircularSmsService extends Service{
 
     private NumberProvider mNumberprovider;
     private Cursor mCursor;
@@ -39,6 +45,27 @@ public class SmsService extends Service {
     private AMapLocationClientOption mLocationOption;
     private static String location_info = null;
 
+    public Handler mHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+
+            locateAndSendMessages(mContext);
+
+            mHandler.removeMessages(1);
+            mHandler.sendEmptyMessageDelayed(1,10*60000);
+
+        }
+    };
+
+    private BroadcastReceiver mQuitReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            android.util.Log.i("ly20170526","now we know we should end this service");
+            mContext.stopService(new Intent(mContext,CircularSmsService.class));
+        }
+    };
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -48,7 +75,6 @@ public class SmsService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        android.util.Log.i("ly20170430", "SmsService onCreate");
 
         mContext = this;
         mNumberprovider = new NumberProvider(this);
@@ -66,20 +92,22 @@ public class SmsService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        android.util.Log.i("ly20170430", "SmsService onSTartCommand");
-        android.util.Log.i("ly20170430", "SmsService now we gonna send messages");
-        locateAndSendMessages(this);
-        Intent gotoMmsApplication = new Intent();
-        gotoMmsApplication.setClassName("com.android.mms","com.android.mms.ui.ConversationList");
-        gotoMmsApplication.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        this.startActivity(gotoMmsApplication);
+
+        IntentFilter quitFilter = new IntentFilter();
+        quitFilter.addAction("agold.sos.quit");
+        mContext.registerReceiver(mQuitReceiver,quitFilter);
+
+        mHandler.removeMessages(1);
+        mHandler.sendEmptyMessage(1);
+
         return super.onStartCommand(intent, flags, startId);
+
     }
 
     @Override
     public void onDestroy() {
-        android.util.Log.i("ly20170430", "SmsService onDestroy");
         super.onDestroy();
+        mContext.unregisterReceiver(mQuitReceiver);
     }
 
     public void setNumbers() {
@@ -165,5 +193,6 @@ public class SmsService extends Service {
 
         mlocationClient.startLocation();
     }
+
 
 }

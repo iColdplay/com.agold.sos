@@ -37,6 +37,7 @@ import android.graphics.Color;
 import android.widget.Toast;
 
 import com.agold.sos.services.CallService;
+import com.agold.sos.services.CircularSmsService;
 import com.agold.sos.services.SmsService;
 import com.agold.sos.services.ClearService;
 import com.agold.sos.utils.PermissionHelper;
@@ -109,7 +110,6 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
     private RelativeLayout relativeLayout;
 
     private static boolean hasLocationPermission = true;
-
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -320,11 +320,31 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         callSlideView.setOnSlideCompleteListener(new SlideView.OnSlideCompleteListener() {
             @Override
             public void onSlideComplete(SlideView slideView) {
-                Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-                vibrator.vibrate(600);
-                android.util.Log.i("ly20170418", "slider 1 complete");
-                Intent callService = new Intent(getApplicationContext(), CallService.class);
-                startService(callService);
+                if(!isEmptyContact()) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                    builder.setMessage("CALL\n Your phone will make phone calls to your emergency contacts");
+                    builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                            vibrator.vibrate(600);
+                            android.util.Log.i("ly20170418", "slider 1 complete");
+                            Intent callService = new Intent(getApplicationContext(), CallService.class);
+                            startService(callService);
+
+                        }
+                    });
+                    builder.setNegativeButton("no", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+                    builder.create().show();
+                }else{
+                    Toast.makeText(getApplicationContext(), "NO emergency number", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -332,11 +352,31 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         smsSlideView.setOnSlideCompleteListener(new SlideView.OnSlideCompleteListener() {
             @Override
             public void onSlideComplete(SlideView slideView) {
-                Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-                vibrator.vibrate(600);
-                android.util.Log.i("ly20170418", "slider 2 complete");
-                Intent smsService = new Intent(getApplicationContext(), SmsService.class);
-                startService(smsService);
+                if(!isEmptyContact()) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                    builder.setMessage("SMS\nYour phonewill send emergency  to your emergency contacts");
+                    builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                            vibrator.vibrate(600);
+                            android.util.Log.i("ly20170418", "slider 2 complete");
+                            Intent smsService = new Intent(getApplicationContext(), SmsService.class);
+                            startService(smsService);
+
+                        }
+                    });
+                    builder.setNegativeButton("no", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+                    builder.create().show();
+                }else{
+                    Toast.makeText(getApplicationContext(), "NO emergency number", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -344,11 +384,33 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         sosSlideView.setOnSlideCompleteListener(new SlideView.OnSlideCompleteListener() {
             @Override
             public void onSlideComplete(SlideView slideView) {
-                Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-                vibrator.vibrate(600);
-                android.util.Log.i("ly20170418", "slider 3 complete");
-                Intent sosService = new Intent(getApplicationContext(), ClearService.class);
-                startService(sosService);
+
+                if (!isEmptyContact()) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                    builder.setMessage("SOS\nYour phone will enter in deep sleep\nOnly send emergency messages automatically\nYou can only long press SOS button to quit this mode");
+                    builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                            vibrator.vibrate(600);
+                            android.util.Log.i("ly20170418", "slider 3 complete");
+                            Intent sosService = new Intent(getApplicationContext(), ClearService.class);
+                            startService(sosService);
+                            Intent circularSms = new Intent(getApplicationContext(), CircularSmsService.class);
+                            startService(circularSms);
+
+                        }
+                    });
+                    builder.setNegativeButton("no", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+                    builder.create().show();
+                }else {
+                    Toast.makeText(getApplicationContext(), "NO emergency number", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -385,6 +447,22 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                 relativeLayout.setVisibility(View.INVISIBLE);
             }
         }
+    }
+
+    public boolean isEmptyContact(){
+        boolean emptyContact = true;
+        mNumberprovider.open();
+        if (mCursor != null) {
+            mCursor.close();
+        }
+        mCursor = mNumberprovider.query();
+        if (mCursor != null) {
+            if (mCursor.getCount() > 0) {
+                emptyContact = false;
+                android.util.Log.i("20170505", "now we think the database is not empty");
+            }
+        }
+        return emptyContact;
     }
 
     /**
@@ -608,7 +686,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
 
                 if (!mFirstFix) {
                     mFirstFix = true;
-                    addCircle(location, amapLocation.getAccuracy());//添加定位精度圆
+                    addCircle(location, amapLocation.getAccuracy());//添加精度圆
                     addMarker(location);//添加定位图标
                     android.util.Log.i("ly20170511", "use sensor helper to change the direction");
                     mSensorHelper.setCurrentMarker(mLocMarker);//定位图标旋转
@@ -679,7 +757,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         options.strokeColor(STROKE_COLOR);
         options.center(latlng);
         options.radius(radius);
-        mCircle = aMap.addCircle(options);
+        options.visible(false);
+        mCircle =  aMap.addCircle(options);
     }
 
     private void addMarker(LatLng latlng) {
