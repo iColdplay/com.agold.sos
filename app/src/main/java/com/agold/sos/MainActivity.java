@@ -220,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                 final EditText editNumber = (EditText) addContact.findViewById(R.id.et_number);
                 final EditText editName = (EditText) addContact.findViewById(R.id.et_name);
                 builder.setView(addContact);
-                builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mNumberprovider.open();
@@ -237,9 +237,9 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                         if (number != null && !TextUtils.isEmpty(number)) {
                             Long insertResult = mNumberprovider.insertData(name, number, 1);
                             if (insertResult > 0) {
-                                Toast.makeText(mContext, "OK", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(mContext, R.string.ok, Toast.LENGTH_SHORT).show();
                             } else {
-                                Toast.makeText(mContext, "FAIL", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(mContext, R.string.fail, Toast.LENGTH_SHORT).show();
                             }
                         }
                         mNumberprovider.close();
@@ -265,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                 final EditText editNumber = (EditText) addContact.findViewById(R.id.et_number);
                 final EditText editName = (EditText) addContact.findViewById(R.id.et_name);
                 builder.setView(addContact);
-                builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mNumberprovider.open();
@@ -282,9 +282,9 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                         if (number != null && !TextUtils.isEmpty(number)) {
                             Long insertResult = mNumberprovider.insertData(name, number, 1);
                             if (insertResult > 0) {
-                                Toast.makeText(mContext, "OK", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(mContext, R.string.ok, Toast.LENGTH_SHORT).show();
                             } else {
-                                Toast.makeText(mContext, "FAIL", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(mContext, R.string.fail, Toast.LENGTH_SHORT).show();
                             }
                         }
                         mNumberprovider.close();
@@ -322,8 +322,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
             public void onSlideComplete(SlideView slideView) {
                 if(!isEmptyContact()) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                    builder.setMessage("CALL\n Your phone will make phone calls to your emergency contacts");
-                    builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                    builder.setMessage(R.string.call_dialog_hint);
+                    builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
@@ -335,7 +335,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
 
                         }
                     });
-                    builder.setNegativeButton("no", new DialogInterface.OnClickListener() {
+                    builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
@@ -343,7 +343,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                     });
                     builder.create().show();
                 }else{
-                    Toast.makeText(getApplicationContext(), "NO emergency number", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), R.string.no_emergency_number, Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -354,8 +354,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
             public void onSlideComplete(SlideView slideView) {
                 if(!isEmptyContact()) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                    builder.setMessage("SMS\nYour phonewill send emergency  to your emergency contacts");
-                    builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                    builder.setMessage(R.string.sms_dialog_hint);
+                    builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
@@ -367,7 +367,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
 
                         }
                     });
-                    builder.setNegativeButton("no", new DialogInterface.OnClickListener() {
+                    builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
@@ -375,7 +375,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                     });
                     builder.create().show();
                 }else{
-                    Toast.makeText(getApplicationContext(), "NO emergency number", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), R.string.no_emergency_number, Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -387,8 +387,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
 
                 if (!isEmptyContact()) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                    builder.setMessage("SOS\nYour phone will enter in deep sleep\nOnly send emergency messages automatically\nYou can only long press SOS button to quit this mode");
-                    builder.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                    builder.setMessage(R.string.sos_dialog_hint);
+                    builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
@@ -401,7 +401,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
 
                         }
                     });
-                    builder.setNegativeButton("no", new DialogInterface.OnClickListener() {
+                    builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
@@ -409,7 +409,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                     });
                     builder.create().show();
                 }else {
-                    Toast.makeText(getApplicationContext(), "NO emergency number", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), R.string.no_emergency_number, Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -498,7 +498,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                 android.util.Log.i("ly20170504", "initData contact name-->" + mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NAME)));
                 mDatas.add("" + mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NUM)));
                 if (mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NAME)).isEmpty()) {
-                    mNames.add("该联系人未设置姓名");
+                    mNames.add(getString(R.string.contact_no_name));
                 } else {
                     mNames.add(mCursor.getString(mCursor.getColumnIndexOrThrow(NumberProvider.KEY_NAME)));
                 }

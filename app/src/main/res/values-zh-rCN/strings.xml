@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Sos</string>
+    <string name="title_home">定位</string>
+    <string name="title_dashboard">紧急联系人</string>
+    <string name="title_notifications">急救功能</string>
+    <string name="action_settings">设置</string>
+    <string name="no_emergency_number">无紧急联系人</string>
+    <string name="help_me">我处于危险中，请求救援！</string>
+    <string name="latitude_longitude">\n经纬度:</string>
+    <string name="location_info">\n位置信息：</string>
+    <string name="ok">确定</string>
+    <string name="fail">失败</string>
+    <string name="call_dialog_hint">拨号\n您将向您所有的紧急联系人拨号求救</string>
+    <string name="no">取消</string>
+    <string name="sms_dialog_hint">短信\n您将向您所有的紧急联系人发送一条求救信息，求救信息中将包含您的位置信息</string>
+    <string name="sos_dialog_hint">求救模式\n您将关闭手机中所有的后台服务，以达到更长时间的续航 \n您的手机将每隔10分钟向紧急联系人发送求救短信 \n您可以长按电源键退出此模式</string>
+    <string name="contact_no_name">此联系人未设置姓名</string>
+    <string name="add_contact">添加您的紧急联系人</string>
+    <string name="call">拨号</string>
+    <string name="sms">短信</string>
+    <string name="sos">求救模式</string>
+    <string name="delete_item">删除？</string>
+    <string name="yes_delete">确定！</string>
+</resources>

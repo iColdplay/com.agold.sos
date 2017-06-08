@@ -56,7 +56,7 @@
                 app:buttonBackgroundColor="@android:color/white"
                 app:buttonImage="@drawable/ic_call"
                 app:slideBackgroundColor="@color/colorAccent"
-                app:slideText="CALL"
+                app:slideText="@string/call"
                 app:slideTextColor="@android:color/white" />
 
             <com.agold.sos.view.SlideView
@@ -67,7 +67,7 @@
                 app:buttonBackgroundColor="@android:color/white"
                 app:buttonImage="@drawable/ic_sms"
                 app:slideBackgroundColor="@color/colorAccent"
-                app:slideText="SMS"
+                app:slideText="@string/sms"
                 app:slideTextColor="@android:color/white"
                 app:strokeColor="@color/colorAccent"/>
 
@@ -80,7 +80,7 @@
                 app:buttonBackgroundColor="@android:color/white"
                 app:buttonImage="@drawable/ic_sos"
                 app:slideBackgroundColor="@color/colorAccent"
-                app:slideText="SOS"
+                app:slideText="@string/sos"
                 app:slideTextColor="@android:color/white"
                 app:strokeColor="@color/colorAccent"/>
 
@@ -100,7 +100,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="0.4"
                 android:gravity="bottom|center"
-                android:text="未添加紧急联系人"
+                android:text="@string/no_emergency_number"
                 android:textSize="26sp" />
 
             <TextView
@@ -110,7 +110,7 @@
                 android:layout_weight="0.62"
                 android:gravity="center"
                 android:layout_gravity="center"
-                android:text="添加"
+                android:text="@string/add_contact"
                 android:textColor="@color/colorAccent"
                 android:textSize="20sp" />
 
@@ -148,7 +148,7 @@
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_edit"
                     fab:fab_size="mini"
-                    fab:fab_label="添加紧急联系人" />
+                    fab:fab_label="@string/add_contact" />
 
             </com.github.clans.fab.FloatingActionMenu>
 

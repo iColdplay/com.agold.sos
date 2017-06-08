@@ -15,6 +15,7 @@ import android.support.annotation.Nullable;
 import android.telephony.SmsManager;
 import android.widget.Toast;
 
+import com.agold.sos.R;
 import com.agold.sos.database.NumberProvider;
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
@@ -82,7 +83,7 @@ public class CircularSmsService extends Service{
         setNumbers();
         //check if the emergency number is NULL
         if (numbers.size() == 0) {
-            Toast.makeText(this, "NO emergency number", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.no_emergency_number, Toast.LENGTH_SHORT).show();
             stopSelf();
         }
         smsManager = getDefault();
@@ -139,7 +140,7 @@ public class CircularSmsService extends Service{
         for(int i = 0;i < numbers.size();i++){
             android.util.Log.i("ly20170430","send message to the --->" + numbers.get(i));
             //此处支持自定义短信内容
-            smsManager.sendTextMessage(numbers.get(i),null,"救我！"+"\n经纬度："+location+"\n位置信息："+position,pIntent,null);
+            smsManager.sendTextMessage(numbers.get(i),null,getString(R.string.help_me)+getString(R.string.latitude_longitude)+location+getString(R.string.location_info)+position,pIntent,null);
         }
     }
 

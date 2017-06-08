@@ -16,6 +16,8 @@ import android.telephony.TelephonyManager;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+
+import com.agold.sos.R;
 import com.agold.sos.database.NumberProvider;
 /**
  * Created by root on 17-4-27.
@@ -78,7 +80,7 @@ public class CallService extends Service {
         setNumbers();
         //check if the emergency number is NULL
         if (numbers.size() == 0) {
-            Toast.makeText(this, "NO emergency number", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.no_emergency_number, Toast.LENGTH_SHORT).show();
             //stopSelf();
             this.onDestroy();
         }
