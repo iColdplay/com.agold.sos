@@ -113,6 +113,8 @@ public class SmsService extends Service {
             //此处支持自定义短信内容
             smsManager.sendTextMessage(numbers.get(i),null,"救我！"+"\n经纬度："+location+"\n位置信息："+position,pIntent,null);
         }
+        //ly 20170712 遇到了CallService一样的问题 回调销毁service方法
+        this.onDestroy();
     }
 
     public void locateAndSendMessages(Context context){

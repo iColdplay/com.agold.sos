@@ -21,4 +21,7 @@
     <string name="sos">SOS</string>
     <string name="delete_item">Delete Item?</string>
     <string name="yes_delete">Yes,Delete</string>
+    <string name="success">success</string>
+    <string name="contact_number">Contact Number:</string>
+    <string name="contact_name">Contact Name：</string>
 </resources>

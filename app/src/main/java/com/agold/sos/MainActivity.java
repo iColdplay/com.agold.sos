@@ -237,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                         if (number != null && !TextUtils.isEmpty(number)) {
                             Long insertResult = mNumberprovider.insertData(name, number, 1);
                             if (insertResult > 0) {
-                                Toast.makeText(mContext, R.string.ok, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(mContext, R.string.success, Toast.LENGTH_SHORT).show();
                             } else {
                                 Toast.makeText(mContext, R.string.fail, Toast.LENGTH_SHORT).show();
                             }
@@ -282,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                         if (number != null && !TextUtils.isEmpty(number)) {
                             Long insertResult = mNumberprovider.insertData(name, number, 1);
                             if (insertResult > 0) {
-                                Toast.makeText(mContext, R.string.ok, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(mContext, R.string.success, Toast.LENGTH_SHORT).show();
                             } else {
                                 Toast.makeText(mContext, R.string.fail, Toast.LENGTH_SHORT).show();
                             }

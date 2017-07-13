@@ -54,7 +54,7 @@ public class CircularSmsService extends Service{
             locateAndSendMessages(mContext);
 
             mHandler.removeMessages(1);
-            mHandler.sendEmptyMessageDelayed(1,10*60000);
+            mHandler.sendEmptyMessageDelayed(1, 60000);
 
         }
     };
