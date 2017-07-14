@@ -1,5 +1,7 @@
 package com.agold.sos.services;
 
+import com.agold.sos.*;
+import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -10,6 +12,7 @@ import android.database.Cursor;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.telephony.SmsManager;
@@ -46,27 +49,6 @@ public class CircularSmsService extends Service{
     private AMapLocationClientOption mLocationOption;
     private static String location_info = null;
 
-    public Handler mHandler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-
-            locateAndSendMessages(mContext);
-
-            mHandler.removeMessages(1);
-            mHandler.sendEmptyMessageDelayed(1, 60000);
-
-        }
-    };
-
-    private BroadcastReceiver mQuitReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            android.util.Log.i("ly20170526","now we know we should end this service");
-            mContext.stopService(new Intent(mContext,CircularSmsService.class));
-        }
-    };
-
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -76,6 +58,7 @@ public class CircularSmsService extends Service{
     @Override
     public void onCreate() {
         super.onCreate();
+        android.util.Log.i("ly20170430", "SmsService onCreate");
 
         mContext = this;
         mNumberprovider = new NumberProvider(this);
@@ -83,7 +66,7 @@ public class CircularSmsService extends Service{
         setNumbers();
         //check if the emergency number is NULL
         if (numbers.size() == 0) {
-            Toast.makeText(this, R.string.no_emergency_number, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "NO emergency number", Toast.LENGTH_SHORT).show();
             stopSelf();
         }
         smsManager = getDefault();
@@ -93,22 +76,31 @@ public class CircularSmsService extends Service{
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        android.util.Log.i("ly20170430", "SmsService onSTartCommand");
+        android.util.Log.i("ly20170430", "SmsService now we gonna send messages");
 
-        IntentFilter quitFilter = new IntentFilter();
-        quitFilter.addAction("agold.sos.quit");
-        mContext.registerReceiver(mQuitReceiver,quitFilter);
+        //20170713 wake system
+        AlarmManager manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        int triggerTime = 10 * 60 * 1000;
+        long keepTime = SystemClock.elapsedRealtime() + triggerTime;
+        Intent i = new Intent(this, AlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, i, 0);
+        manager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, keepTime, pendingIntent);
+        //end
 
-        mHandler.removeMessages(1);
-        mHandler.sendEmptyMessage(1);
+        locateAndSendMessages(this);
+//        Intent gotoMmsApplication = new Intent();
+//        gotoMmsApplication.setClassName("com.android.mms","com.android.mms.ui.ConversationList");
+//        gotoMmsApplication.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        this.startActivity(gotoMmsApplication);
 
         return super.onStartCommand(intent, flags, startId);
-
     }
 
     @Override
     public void onDestroy() {
+        android.util.Log.i("ly20170430", "SmsService onDestroy");
         super.onDestroy();
-        mContext.unregisterReceiver(mQuitReceiver);
     }
 
     public void setNumbers() {
@@ -140,8 +132,10 @@ public class CircularSmsService extends Service{
         for(int i = 0;i < numbers.size();i++){
             android.util.Log.i("ly20170430","send message to the --->" + numbers.get(i));
             //此处支持自定义短信内容
-            smsManager.sendTextMessage(numbers.get(i),null,getString(R.string.help_me)+getString(R.string.latitude_longitude)+location+getString(R.string.location_info)+position,pIntent,null);
+            smsManager.sendTextMessage(numbers.get(i),null,"救我！"+"\n经纬度："+location+"\n位置信息："+position,pIntent,null);
         }
+        //ly 20170712 遇到了CallService一样的问题 回调销毁service方法
+        this.onDestroy();
     }
 
     public void locateAndSendMessages(Context context){

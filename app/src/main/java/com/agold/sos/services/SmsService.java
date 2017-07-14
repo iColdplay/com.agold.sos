@@ -1,11 +1,13 @@
 package com.agold.sos.services;
 
+import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.telephony.SmsManager;
 import android.widget.Toast;
@@ -73,6 +75,7 @@ public class SmsService extends Service {
         gotoMmsApplication.setClassName("com.android.mms","com.android.mms.ui.ConversationList");
         gotoMmsApplication.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         this.startActivity(gotoMmsApplication);
+
         return super.onStartCommand(intent, flags, startId);
     }
 

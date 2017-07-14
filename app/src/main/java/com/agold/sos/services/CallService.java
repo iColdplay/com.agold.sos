@@ -51,6 +51,13 @@ public class CallService extends Service {
         android.util.Log.i("ly20170427", "CallService onCreate");
         android.util.Log.i("ly20170430","onCreate and the numberId is -->" + numberId);
 
+        //ly 20170714
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            android.util.Log.i("ly20170714", " return by permission--->" + "CALL");
+            Toast.makeText(this, R.string.no_call_permission, Toast.LENGTH_SHORT).show();
+        }
+        //end
+
         mContext = this;
         mNumberprovider = new NumberProvider(this);
 

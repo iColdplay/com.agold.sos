@@ -169,10 +169,14 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        android.util.Log.i("ly20170511","onCreate method");
+        android.util.Log.i("ly20170511", "onCreate method");
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             android.util.Log.i("ly20170511", "no ACCESS_FINE_LOCATION");
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2000);
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.CALL_PHONE,
+                    Manifest.permission.INTERNET,
+                    Manifest.permission.SEND_SMS}, 2000);
             hasLocationPermission = false;
         }
         //全屏显示
@@ -189,18 +193,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         mContext = this;
         mNumberprovider = new NumberProvider(this);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-            android.util.Log.i("ly20170427", " return by permission" + "CALL_PHONE");
-        }
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            android.util.Log.i("ly20170427", " return by permission" + "ACCESS_COARSE_LOCATION");
-        }
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
-            android.util.Log.i("ly20170427", " return by permission" + "INTERNET");
-        }
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            android.util.Log.i("ly20170505", " return by permission" + "ACCESS_FINE_LOCATION");
-        }
+        checkPermissions();
 
         setContentView(R.layout.activity_main);
 
@@ -320,7 +313,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         callSlideView.setOnSlideCompleteListener(new SlideView.OnSlideCompleteListener() {
             @Override
             public void onSlideComplete(SlideView slideView) {
-                if(!isEmptyContact()) {
+                if (!isEmptyContact()) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setMessage(R.string.call_dialog_hint);
                     builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
@@ -342,7 +335,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                         }
                     });
                     builder.create().show();
-                }else{
+                } else {
                     Toast.makeText(getApplicationContext(), R.string.no_emergency_number, Toast.LENGTH_SHORT).show();
                 }
             }
@@ -352,7 +345,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         smsSlideView.setOnSlideCompleteListener(new SlideView.OnSlideCompleteListener() {
             @Override
             public void onSlideComplete(SlideView slideView) {
-                if(!isEmptyContact()) {
+                if (!isEmptyContact()) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setMessage(R.string.sms_dialog_hint);
                     builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
@@ -374,7 +367,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                         }
                     });
                     builder.create().show();
-                }else{
+                } else {
                     Toast.makeText(getApplicationContext(), R.string.no_emergency_number, Toast.LENGTH_SHORT).show();
                 }
             }
@@ -408,12 +401,32 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                         }
                     });
                     builder.create().show();
-                }else {
+                } else {
                     Toast.makeText(getApplicationContext(), R.string.no_emergency_number, Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
+
+    private void checkPermissions() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            Log.i("ly20170427", " return by permission" + "CALL_PHONE");
+            return;
+        }
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//            Log.i("ly20170427", " return by permission" + "ACCESS_COARSE_LOCATION");
+//            return;
+//        }
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
+//            Log.i("ly20170427", " return by permission" + "INTERNET");
+//            return;
+//        }
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//            Log.i("ly20170505", " return by permission" + "ACCESS_FINE_LOCATION");
+//            return;
+//        }
+    }
+
 
     public void refreshContactFrag() {
         boolean emptyContact = true;
@@ -449,7 +462,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         }
     }
 
-    public boolean isEmptyContact(){
+    public boolean isEmptyContact() {
         boolean emptyContact = true;
         mNumberprovider.open();
         if (mCursor != null) {
@@ -515,7 +528,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
     private void init() {
 
         if (aMap == null) {
-            android.util.Log.i("ly20170511","init() aMap is NOT null");
+            android.util.Log.i("ly20170511", "init() aMap is NOT null");
             aMap = mapView.getMap();
             if (aMap == null) {
                 android.util.Log.i("ly20170408", "amap is null RETURN");
@@ -524,8 +537,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                 android.util.Log.i("ly20170408", "aMap is not NULL");
             }
             setUpMap();
-        }else{
-            android.util.Log.i("ly20170511","init() aMap is null");
+        } else {
+            android.util.Log.i("ly20170511", "init() aMap is null");
         }
         if (mSensorHelper == null) {
             android.util.Log.i("ly20170511", "init() now we create the new SensorHelper");
@@ -555,14 +568,14 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
      */
     @Override
     protected void onResume() {
-        android.util.Log.i("ly20170511","onResume method");
+        android.util.Log.i("ly20170511", "onResume method");
         super.onResume();
-        android.util.Log.i("ly20170511","onResume we init mapView here");
-        if(hasLocationPermission){
+        android.util.Log.i("ly20170511", "onResume we init mapView here");
+        if (hasLocationPermission) {
             init();
         }
         mapView.onResume();
-        if(mlocationClient != null){
+        if (mlocationClient != null) {
             mlocationClient.startLocation();
         }
     }
@@ -631,7 +644,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
     protected void onDestroy() {
         super.onDestroy();
         if (mLocMarker != null) {
-            android.util.Log.i("ly20170516","now we destory mLocMarker");
+            android.util.Log.i("ly20170516", "now we destory mLocMarker");
             mLocMarker.destroy();
         }
         mapView.onDestroy();
@@ -745,7 +758,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
 //            mlocationClient.onDestroy();
 //        }
 //        mlocationClient = null;
-        if(mlocationClient != null){
+        if (mlocationClient != null) {
             mlocationClient.stopLocation();
         }
     }
@@ -758,7 +771,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         options.center(latlng);
         options.radius(radius);
         options.visible(false);
-        mCircle =  aMap.addCircle(options);
+        mCircle = aMap.addCircle(options);
     }
 
     private void addMarker(LatLng latlng) {
@@ -795,10 +808,10 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         if (requestCode == 2000) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 Toast.makeText(getApplicationContext(), "No LOCATION Permission", Toast.LENGTH_LONG).show();
-                android.util.Log.i("ly20170511","onRequestPermissionsResult we dont have permission and we finish it");
+                android.util.Log.i("ly20170511", "onRequestPermissionsResult we dont have permission and we finish it");
                 finish();
-            }else{
-                android.util.Log.i("ly20170511","onRequestPermissionsResult we got the permission and we try to refresh the mapview");
+            } else {
+                android.util.Log.i("ly20170511", "onRequestPermissionsResult we got the permission and we try to refresh the mapview");
                 init();
                 hasLocationPermission = true;
             }

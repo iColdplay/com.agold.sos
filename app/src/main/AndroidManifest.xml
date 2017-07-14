@@ -72,6 +72,13 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name=".AlarmReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="agold.wake.system" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>
