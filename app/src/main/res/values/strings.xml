@@ -30,4 +30,5 @@
     <string name="sms_position">\nPosition：</string>
     <string name="send_sms_failed">Send sms failed,please check your network.</string>
     <string name="sms_set_default_id">Please setup your default Sim on SMS.</string>
+    <string name="system_user_hint">Only System User!</string>
 </resources>

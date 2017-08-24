@@ -13,6 +13,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.UserManager;
 import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -170,6 +171,16 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         android.util.Log.i("ly20170511", "onCreate method");
+
+        //20170824 solve non user mode issues
+        UserManager userManager = (UserManager) getSystemService(Context.USER_SERVICE);
+        if(!userManager.isSystemUser()){
+            android.util.Log.i("ly20170824", "this is not system user");
+            Toast.makeText(getApplicationContext(), R.string.system_user_hint, Toast.LENGTH_LONG).show();
+            this.finish();
+        }
+        //end
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             android.util.Log.i("ly20170511", "no ACCESS_FINE_LOCATION");
             ActivityCompat.requestPermissions(this,

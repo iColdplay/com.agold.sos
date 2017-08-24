@@ -30,4 +30,5 @@
     <string name="sms_position">\n位置信息：</string>
     <string name="send_sms_failed">短信发送失败，请检查网络</string>
     <string name="sms_set_default_id">您的求救短信没有发送，请设置您默认发送短信的SIM卡</string>
+    <string name="system_user_hint">仅机主可用!</string>
 </resources>
