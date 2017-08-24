@@ -6,13 +6,17 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.telephony.SmsManager;
 import android.widget.Toast;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+
+import com.agold.sos.R;
 import com.agold.sos.database.NumberProvider;
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
@@ -58,10 +62,10 @@ public class SmsService extends Service {
         setNumbers();
         //check if the emergency number is NULL
         if (numbers.size() == 0) {
-            Toast.makeText(this, "NO emergency number", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.no_emergency_number, Toast.LENGTH_SHORT).show();
             stopSelf();
         }
-        smsManager = getDefault();
+        //smsManager = getDefault();
 
 
     }
@@ -72,11 +76,15 @@ public class SmsService extends Service {
         android.util.Log.i("ly20170430", "SmsService now we gonna send messages");
         locateAndSendMessages(this);
         Intent gotoMmsApplication = new Intent();
-        gotoMmsApplication.setClassName("com.android.mms","com.android.mms.ui.ConversationList");
+        //gotoMmsApplication.setClassName("com.android.mms","com.android.mms.ui.ConversationList");
+        //gotoMmsApplication.setClassName("com.google.android.apps.messaging","com.google.android.apps.messaging.ui.conversation.ConversationActivity");
+        //gotoMmsApplication.setData(Uri.parse("#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_MESSAGING;end"));
+        gotoMmsApplication.setAction("android.intent.action.MAIN");
+        gotoMmsApplication.addCategory("android.intent.category.APP_MESSAGING");
         gotoMmsApplication.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         this.startActivity(gotoMmsApplication);
 
-        return super.onStartCommand(intent, flags, startId);
+        return START_NOT_STICKY;
     }
 
     @Override
@@ -111,13 +119,29 @@ public class SmsService extends Service {
     private void sendMessage(String location, String position){
         Intent sendSucess = new Intent("agold.sos.sms.send.success");
         PendingIntent pIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, sendSucess, PendingIntent.FLAG_UPDATE_CURRENT);
+        android.util.Log.i("ly20170718","now we should know the default Subscription-->"+SmsManager.getDefaultSmsSubscriptionId());
+        if(SmsManager.getDefaultSmsSubscriptionId() !=1 && SmsManager.getDefaultSmsSubscriptionId() !=2){
+            Toast.makeText(this, R.string.sms_set_default_id, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        smsManager = SmsManager.getSmsManagerForSubscriptionId(SmsManager.getDefaultSmsSubscriptionId());
+
         for(int i = 0;i < numbers.size();i++){
             android.util.Log.i("ly20170430","send message to the --->" + numbers.get(i));
             //此处支持自定义短信内容
-            smsManager.sendTextMessage(numbers.get(i),null,"救我！"+"\n经纬度："+location+"\n位置信息："+position,pIntent,null);
+            try {
+                android.util.Log.i("ly20170727","show this fucking number-->" + numbers.get(i));
+                android.util.Log.i("ly20170727","text-->" +
+                        getString(R.string.sms_help_me) + getString(R.string.sms_location) + location + getString(R.string.sms_position) + position);
+                smsManager.sendTextMessage(numbers.get(i), null,
+                        getString(R.string.sms_help_me) + "\n" + location + "\n" + position,
+                        pIntent, null);
+            }catch (Exception e){
+                e.printStackTrace();
+                android.util.Log.i("ly20170718","send sms failed");
+                Toast.makeText(this, R.string.send_sms_failed, Toast.LENGTH_SHORT).show();
+            }
         }
-        //ly 20170712 遇到了CallService一样的问题 回调销毁service方法
-        this.onDestroy();
     }
 
     public void locateAndSendMessages(Context context){
@@ -152,7 +176,7 @@ public class SmsService extends Service {
                 mlocationClient.stopLocation();
                 mlocationClient.onDestroy();
                 sendMessage(location.toString(),buffer.toString());
-                //SmsService.this.onDestroy();
+                SmsService.this.onDestroy();
                 mContext.stopService(new Intent(mContext,SmsService.class));
             }
         });

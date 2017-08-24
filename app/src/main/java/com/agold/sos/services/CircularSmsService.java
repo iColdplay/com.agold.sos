@@ -66,7 +66,7 @@ public class CircularSmsService extends Service{
         setNumbers();
         //check if the emergency number is NULL
         if (numbers.size() == 0) {
-            Toast.makeText(this, "NO emergency number", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.no_emergency_number, Toast.LENGTH_SHORT).show();
             stopSelf();
         }
         smsManager = getDefault();
@@ -132,7 +132,20 @@ public class CircularSmsService extends Service{
         for(int i = 0;i < numbers.size();i++){
             android.util.Log.i("ly20170430","send message to the --->" + numbers.get(i));
             //此处支持自定义短信内容
-            smsManager.sendTextMessage(numbers.get(i),null,"救我！"+"\n经纬度："+location+"\n位置信息："+position,pIntent,null);
+            try {
+                android.util.Log.i("ly20170718","now we should know the default Subscription-->"+SmsManager.getDefaultSmsSubscriptionId());
+                if(SmsManager.getDefaultSmsSubscriptionId() !=1 && SmsManager.getDefaultSmsSubscriptionId() !=2){
+                    Toast.makeText(this, R.string.sms_set_default_id, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                SmsManager duo = SmsManager.getSmsManagerForSubscriptionId(SmsManager.getDefaultSmsSubscriptionId());
+                duo.sendTextMessage(numbers.get(i), null,
+                        getString(R.string.sms_help_me) + getString(R.string.sms_location) + location + getString(R.string.sms_position) + position, pIntent, null);
+            }catch (Exception e){
+                e.printStackTrace();
+                android.util.Log.i("ly20170718","send sms failed");
+                Toast.makeText(this, R.string.send_sms_failed, Toast.LENGTH_SHORT).show();
+            }
         }
         //ly 20170712 遇到了CallService一样的问题 回调销毁service方法
         this.onDestroy();

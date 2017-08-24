@@ -176,7 +176,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.CALL_PHONE,
                     Manifest.permission.INTERNET,
-                    Manifest.permission.SEND_SMS}, 2000);
+                    Manifest.permission.SEND_SMS,
+                    Manifest.permission.ACCESS_LOCATION_EXTRA_COMMANDS}, 2000);
             hasLocationPermission = false;
         }
         //全屏显示

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 
 import com.agold.sos.R;
 import com.agold.sos.database.NumberProvider;
+
 /**
  * Created by root on 17-4-27.
  * CallService 从数据库中读取紧急联系人信息，然后进行一轮的循环拨号任务
@@ -49,7 +50,7 @@ public class CallService extends Service {
     @Override
     public void onCreate() {
         android.util.Log.i("ly20170427", "CallService onCreate");
-        android.util.Log.i("ly20170430","onCreate and the numberId is -->" + numberId);
+        android.util.Log.i("ly20170430", "onCreate and the numberId is -->" + numberId);
 
         //ly 20170714
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
@@ -94,7 +95,7 @@ public class CallService extends Service {
         numberId = 0;
         makeCall();
 
-        return super.onStartCommand(intent, flags, startId);
+        return START_NOT_STICKY;
     }
 
     @Override
@@ -127,11 +128,11 @@ public class CallService extends Service {
     }
 
     public void makeCall() {
-        android.util.Log.i("ly20170430","we gonna make the call and the numberId is --->"+numberId);
-        android.util.Log.i("ly20170523","here show the number.size()-->"+numbers.size());
-        if(numberId < numbers.size()) {
+        android.util.Log.i("ly20170430", "we gonna make the call and the numberId is --->" + numberId);
+        android.util.Log.i("ly20170523", "here show the number.size()-->" + numbers.size());
+        if (numberId < numbers.size()) {
             //这里使用handler是为了解决可能出现拨号沉溺在后台的情况
-            new Handler().postDelayed(new Runnable(){
+            new Handler().postDelayed(new Runnable() {
                 public void run() {
                     Intent callIntent = new Intent(Intent.ACTION_CALL);
                     android.util.Log.i("ly20170427", "makeCall");
@@ -152,31 +153,31 @@ public class CallService extends Service {
                     numberId = numberId + 1;
                 }
             }, 500);
-        }else{
+        } else {
             //在这里 stopService 以便再次使用次service
             this.onDestroy();
             //stopSelf();
         }
     }
 
-    public class PhoneCallListener extends PhoneStateListener{
+    public class PhoneCallListener extends PhoneStateListener {
         @Override
         public void onCallStateChanged(int state, String incomingNumber) {
             super.onCallStateChanged(state, incomingNumber);
             switch (state) {
                 case TelephonyManager.CALL_STATE_OFFHOOK:
-                    android.util.Log.i("ly20170427","CALL_STATE_OFFHOOK");
+                    android.util.Log.i("ly20170427", "CALL_STATE_OFFHOOK");
                     fromOffHook = true;
                     break;
                 case TelephonyManager.CALL_STATE_RINGING:
-                    android.util.Log.i("ly20170427","CALL_STATE_RINGING");
+                    android.util.Log.i("ly20170427", "CALL_STATE_RINGING");
                     break;
                 case TelephonyManager.CALL_STATE_IDLE:
-                    android.util.Log.i("ly20170427","CALL_STATE_IDLE");
+                    android.util.Log.i("ly20170427", "CALL_STATE_IDLE");
                     fromIdle = true;
                     //两个状态检测 用于识别下一次拨号的条件
-                    if(fromOffHook && fromIdle){
-                        android.util.Log.i("ly20170430","the status matched and we gonna make the next call");
+                    if (fromOffHook && fromIdle) {
+                        android.util.Log.i("ly20170430", "the status matched and we gonna make the next call");
                         fromOffHook = false;
                         fromIdle = false;
                         makeCall();

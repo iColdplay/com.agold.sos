@@ -84,7 +84,7 @@ public class RecyclerViewAdapter extends RecyclerSwipeAdapter<RecyclerViewAdapte
         viewHolder.swipeLayout.setOnDoubleClickListener(new SwipeLayout.DoubleClickListener() {
             @Override
             public void onDoubleClick(SwipeLayout layout, boolean surface) {
-                Toast.makeText(mContext, "DoubleClick", Toast.LENGTH_SHORT).show();
+               // Toast.makeText(mContext, "DoubleClick", Toast.LENGTH_SHORT).show();
             }
         });
         viewHolder.buttonDelete.setOnClickListener(new View.OnClickListener() {
