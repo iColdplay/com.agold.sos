@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:fab="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -15,11 +15,11 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <com.amap.api.maps.MapView
-            android:id="@+id/map"
+        <LinearLayout
+            android:id="@+id/map_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-        </com.amap.api.maps.MapView>
+            android:layout_height="match_parent"
+            android:orientation="vertical" />
 
         <TextView
             android:id="@+id/location_errInfo_text"
@@ -27,16 +27,16 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|left"
             android:background="@color/red"
-            android:textColor="@color/darkgrey"
             android:text="TextView"
-            android:visibility="gone"/>
+            android:textColor="@color/darkgrey"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/location_infomation"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:textColor="@color/red"
             android:layout_gravity="top|left"
+            android:textColor="@color/red"
             android:visibility="gone" />
 
         <LinearLayout
@@ -69,7 +69,7 @@
                 app:slideBackgroundColor="@color/colorAccent"
                 app:slideText="@string/sms"
                 app:slideTextColor="@android:color/white"
-                app:strokeColor="@color/colorAccent"/>
+                app:strokeColor="@color/colorAccent" />
 
 
             <com.agold.sos.view.SlideView
@@ -82,7 +82,7 @@
                 app:slideBackgroundColor="@color/colorAccent"
                 app:slideText="@string/sos"
                 app:slideTextColor="@android:color/white"
-                app:strokeColor="@color/colorAccent"/>
+                app:strokeColor="@color/colorAccent" />
 
 
         </LinearLayout>
@@ -107,9 +107,9 @@
                 android:id="@+id/text_view_add"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:layout_weight="0.62"
                 android:gravity="center"
-                android:layout_gravity="center"
                 android:text="@string/add_contact"
                 android:textColor="@color/colorAccent"
                 android:textSize="20sp" />
@@ -120,14 +120,14 @@
         <RelativeLayout
             android:id="@+id/list_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" >
+            android:layout_height="match_parent">
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/recyclerview"
-                android:divider="#ffffff"
-                android:dividerHeight="10dp"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:divider="#ffffff"
+                android:dividerHeight="10dp" />
 
             <com.github.clans.fab.FloatingActionMenu
                 android:id="@+id/fab_menu"
@@ -135,20 +135,20 @@
                 android:layout_height="match_parent"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentRight="true"
-                android:paddingRight="10dp"
                 android:paddingBottom="10dp"
                 android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                fab:menu_backgroundColor="#ccffffff"
                 fab:menu_labels_ellipsize="end"
-                fab:menu_labels_singleLine="true"
-                fab:menu_backgroundColor="#ccffffff">
+                fab:menu_labels_singleLine="true">
 
                 <com.github.clans.fab.FloatingActionButton
                     android:id="@+id/fab_1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_edit"
-                    fab:fab_size="mini"
-                    fab:fab_label="@string/add_contact" />
+                    fab:fab_label="@string/add_contact"
+                    fab:fab_size="mini" />
 
             </com.github.clans.fab.FloatingActionMenu>
 

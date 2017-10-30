@@ -29,6 +29,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:resizeableActivity="false">
+
+        <!-- Google Map API V2 Key -->
+        <meta-data
+            android:name="com.google.android.maps.v2.API_KEY"
+            android:value="AIzaSyCxrVT3nUabGlaDussYuEUTZQffiypdvFM" />
         <meta-data
             android:name="com.amap.api.v2.apikey"
             android:value="6877dcb8cf3d228b551f4b2bec43d4ae" />

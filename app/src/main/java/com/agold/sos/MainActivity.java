@@ -1,10 +1,6 @@
 package com.agold.sos;
 
-import com.agold.sos.database.NumberProvider;
-import com.agold.sos.sensor.SensorEventHelper;
-
 import android.Manifest;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.UserManager;
 import android.os.Vibrator;
@@ -32,43 +29,31 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.widget.Toast;
 
+import com.agold.sos.database.NumberProvider;
+import com.agold.sos.location.AMapLocationManager;
+import com.agold.sos.location.GMapLocation;
+import com.agold.sos.location.MapLocation;
+import com.agold.sos.sensor.SensorEventHelper;
 import com.agold.sos.services.CallService;
 import com.agold.sos.services.CircularSmsService;
-import com.agold.sos.services.SmsService;
 import com.agold.sos.services.ClearService;
-import com.agold.sos.utils.PermissionHelper;
+import com.agold.sos.services.SmsService;
 import com.agold.sos.utils.Utils;
-import com.agold.sos.view.SlideView;
 import com.agold.sos.view.RecycleViewDivider;
+import com.agold.sos.view.SlideView;
 import com.amap.api.location.AMapLocation;
-import com.amap.api.location.AMapLocationClient;
-import com.amap.api.location.AMapLocationClientOption;
-import com.amap.api.location.AMapLocationClientOption.AMapLocationMode;
 import com.amap.api.location.AMapLocationListener;
-import com.amap.api.maps.AMap;
-import com.amap.api.maps.CameraUpdateFactory;
-import com.amap.api.maps.LocationSource;
-import com.amap.api.maps.MapView;
-import com.amap.api.maps.model.BitmapDescriptorFactory;
 import com.amap.api.maps.model.Circle;
-import com.amap.api.maps.model.CircleOptions;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.Marker;
-import com.amap.api.maps.model.MarkerOptions;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements LocationSource,
+public class MainActivity extends AppCompatActivity implements
         AMapLocationListener {
 
     private TextView mTextMessage;
@@ -76,11 +61,9 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
     private Context mContext;
     private NumberProvider mNumberprovider;
 
-    private AMap aMap;
-    private MapView mapView;
-    private OnLocationChangedListener mListener;
-    private AMapLocationClient mlocationClient;
-    private AMapLocationClientOption mLocationOption;
+    private LinearLayout mContainerLayout;
+    private AMapLocationManager mAMapLocationManager;
+    private MapLocation mMapLocation;
 
     private TextView mLocationErrText;
     private static final int STROKE_COLOR = Color.argb(180, 3, 145, 255);
@@ -119,8 +102,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_home:
-                    if (mapView != null) {
-                        mapView.setVisibility(View.VISIBLE);
+                    if (mContainerLayout != null) {
+                        mContainerLayout.setVisibility(View.VISIBLE);
                     }
                     if (mSildeLayout != null) {
                         mSildeLayout.setVisibility(View.INVISIBLE);
@@ -140,8 +123,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                     if (mSildeLayout != null) {
                         mSildeLayout.setVisibility(View.INVISIBLE);
                     }
-                    if (mapView != null) {
-                        mapView.setVisibility(View.INVISIBLE);
+                    if (mContainerLayout != null) {
+                        mContainerLayout.setVisibility(View.INVISIBLE);
                     }
                     refreshContactFrag();
                     return true;
@@ -149,8 +132,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                     if (mSildeLayout != null) {
                         mSildeLayout.setVisibility(View.VISIBLE);
                     }
-                    if (mapView != null) {
-                        mapView.setVisibility(View.INVISIBLE);
+                    if (mContainerLayout != null) {
+                        mContainerLayout.setVisibility(View.INVISIBLE);
                     }
                     if (mNullContactLayout != null) {
                         mNullContactLayout.setVisibility(View.INVISIBLE);
@@ -174,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
 
         //20170824 solve non user mode issues
         UserManager userManager = (UserManager) getSystemService(Context.USER_SERVICE);
-        if(!userManager.isSystemUser()){
+        if (!userManager.isSystemUser()) {
             android.util.Log.i("ly20170824", "this is not system user");
             Toast.makeText(getApplicationContext(), R.string.system_user_hint, Toast.LENGTH_LONG).show();
             this.finish();
@@ -185,10 +168,10 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
             android.util.Log.i("ly20170511", "no ACCESS_FINE_LOCATION");
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.CALL_PHONE,
-                    Manifest.permission.INTERNET,
-                    Manifest.permission.SEND_SMS,
-                    Manifest.permission.ACCESS_LOCATION_EXTRA_COMMANDS}, 2000);
+                            Manifest.permission.CALL_PHONE,
+                            Manifest.permission.INTERNET,
+                            Manifest.permission.SEND_SMS,
+                            Manifest.permission.ACCESS_LOCATION_EXTRA_COMMANDS}, 2000);
             hasLocationPermission = false;
         }
         //全屏显示
@@ -219,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         addContact.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                android.util.Log.i("ly20170505", "MainActivity onCreate click addContact");
+
                 AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                 View addContact = getLayoutInflater().inflate(R.layout.add_contact, null);
                 final EditText editNumber = (EditText) addContact.findViewById(R.id.et_number);
@@ -229,12 +212,12 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mNumberprovider.open();
-                        android.util.Log.i("ly20170419", "now we click the ok button");
+
                         String name = null;
                         String number = null;
                         if (editName.getText() != null) {
                             name = editName.getText().toString();
-                            android.util.Log.i("ly20170505", "now we set the data name --->" + name);
+
                         }
                         if (editNumber.getText() != null) {
                             number = editNumber.getText().toString();
@@ -264,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
             @Override
             public void onClick(View v) {
                 fab_menu.close(true);
-                android.util.Log.i("ly20170509", "MainActivity onCreate click fab");
+
                 AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                 View addContact = getLayoutInflater().inflate(R.layout.add_contact, null);
                 final EditText editNumber = (EditText) addContact.findViewById(R.id.et_number);
@@ -274,12 +257,12 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mNumberprovider.open();
-                        android.util.Log.i("ly20170509", "now we click the ok button");
+
                         String name = null;
                         String number = null;
                         if (editName.getText() != null) {
                             name = editName.getText().toString();
-                            android.util.Log.i("ly20170509", "now we set the data name --->" + name);
+
                         }
                         if (editNumber.getText() != null) {
                             number = editNumber.getText().toString();
@@ -316,10 +299,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
 
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-        mapView = (MapView) findViewById(R.id.map);
-        mapView.onCreate(savedInstanceState);
         //init();
-        android.util.Log.i("ly20170427", "SHA1-->" + Utils.getSHA1(this));
+
 
         callSlideView = ((SlideView) findViewById(R.id.slider1));
         callSlideView.setOnSlideCompleteListener(new SlideView.OnSlideCompleteListener() {
@@ -334,7 +315,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
 
                             Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                             vibrator.vibrate(600);
-                            android.util.Log.i("ly20170418", "slider 1 complete");
+
                             Intent callService = new Intent(getApplicationContext(), CallService.class);
                             startService(callService);
 
@@ -366,7 +347,7 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
 
                             Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                             vibrator.vibrate(600);
-                            android.util.Log.i("ly20170418", "slider 2 complete");
+
                             Intent smsService = new Intent(getApplicationContext(), SmsService.class);
                             startService(smsService);
 
@@ -398,7 +379,6 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                         public void onClick(DialogInterface dialog, int which) {
                             Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                             vibrator.vibrate(600);
-                            android.util.Log.i("ly20170418", "slider 3 complete");
                             Intent sosService = new Intent(getApplicationContext(), ClearService.class);
                             startService(sosService);
                             Intent circularSms = new Intent(getApplicationContext(), CircularSmsService.class);
@@ -418,11 +398,14 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                 }
             }
         });
+        mContainerLayout = (LinearLayout) findViewById(R.id.map_container);
+        mLocationErrText = (TextView) findViewById(R.id.location_errInfo_text);
+        mLocationErrText.setVisibility(View.GONE);
+        mAMapLocationManager = new AMapLocationManager(this);
     }
 
     private void checkPermissions() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-            Log.i("ly20170427", " return by permission" + "CALL_PHONE");
             return;
         }
 //        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -534,94 +517,20 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
         mNumberprovider.close();
     }
 
-    /**
-     * 初始化
-     */
-    private void init() {
-
-        if (aMap == null) {
-            android.util.Log.i("ly20170511", "init() aMap is NOT null");
-            aMap = mapView.getMap();
-            if (aMap == null) {
-                android.util.Log.i("ly20170408", "amap is null RETURN");
-                return;
-            } else {
-                android.util.Log.i("ly20170408", "aMap is not NULL");
-            }
-            setUpMap();
-        } else {
-            android.util.Log.i("ly20170511", "init() aMap is null");
-        }
-        if (mSensorHelper == null) {
-            android.util.Log.i("ly20170511", "init() now we create the new SensorHelper");
-            mSensorHelper = new SensorEventHelper(this);
-            if (mSensorHelper != null) {
-                android.util.Log.i("ly20170511", "init() now the SensorHelper is gonna register");
-                mSensorHelper.registerSensorListener();
-                mSensorHelper.setCurrentMarker(mLocMarker);
-            }
-        }
-        mLocationErrText = (TextView) findViewById(R.id.location_errInfo_text);
-        mLocationErrText.setVisibility(View.GONE);
-    }
-
-    /**
-     * 设置一些amap的属性
-     */
-    private void setUpMap() {
-        aMap.setLocationSource(this);// 设置定位监听
-        aMap.getUiSettings().setMyLocationButtonEnabled(false);// 设置默认定位按钮是否显示
-        aMap.setMyLocationEnabled(true);// 设置为true表示显示定位层并可触发定位，false表示隐藏定位层并不可触发定位，默认是false
-        aMap.setMyLocationType(AMap.LOCATION_TYPE_LOCATE); // 设置定位的类型为定位模式 ，可以由定位、跟随或地图根据面向方向旋转几种
-    }
 
     /**
      * 方法必须重写
      */
     @Override
     protected void onResume() {
-        android.util.Log.i("ly20170511", "onResume method");
         super.onResume();
-        android.util.Log.i("ly20170511", "onResume we init mapView here");
         if (hasLocationPermission) {
-            init();
+            mAMapLocationManager.registerLocationListener(this);
         }
-        mapView.onResume();
-        if (mlocationClient != null) {
-            mlocationClient.startLocation();
+        if (mMapLocation != null) {
+            mMapLocation.onResume();
         }
     }
-
-
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode,
-//                                           String[] permissions, int[] grantResults) {
-//        android.util.Log.i("ly20170509", " is not granted !");
-//        PermissionHelper.getInstance().onPermissionsResult(requestCode, permissions, grantResults);
-//    }
-//
-//    private PermissionHelper.PermissionCallback mPermissionCallback = new PermissionHelper.PermissionCallback() {
-//        public void onPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-//            if (grantResults != null && grantResults.length > 0) {
-//                mAllGranted = true;
-//                for (int i = 0; i < grantResults.length; i++) {
-//                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-//                        mAllGranted = false;
-//                        android.util.Log.i("ly20170509", permissions[i] + " is not granted !");
-//                        break;
-//                    }
-//                }
-//                if (!mAllGranted) {
-//                    String toastStr = "禁止的权限";
-//                    Toast.makeText(getApplicationContext(), toastStr, Toast.LENGTH_LONG).show();
-//                    finish();
-//                }else{
-//                    init();
-//                    mapView.onResume();
-//                }
-//            }
-//        }
-//    };
 
 
     /**
@@ -630,14 +539,10 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
     @Override
     protected void onPause() {
         super.onPause();
-        if (mSensorHelper != null) {
-            mSensorHelper.unRegisterSensorListener();
-            mSensorHelper.setCurrentMarker(null);
-            mSensorHelper = null;
+        mAMapLocationManager.unregisterLocationListener();
+        if (mMapLocation != null) {
+            mMapLocation.onPause();
         }
-        mapView.onPause();
-        deactivate();
-        mFirstFix = false;
     }
 
     /**
@@ -646,7 +551,9 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        mapView.onSaveInstanceState(outState);
+        if (mMapLocation != null) {
+            mMapLocation.onSaveInstanceState(outState);
+        }
     }
 
     /**
@@ -655,13 +562,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mLocMarker != null) {
-            android.util.Log.i("ly20170516", "now we destory mLocMarker");
-            mLocMarker.destroy();
-        }
-        mapView.onDestroy();
-        if (null != mlocationClient) {
-            mlocationClient.onDestroy();
+        if (mMapLocation != null) {
+            mMapLocation.onDestroy();
         }
     }
 
@@ -670,138 +572,51 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
      */
     @Override
     public void onLocationChanged(AMapLocation amapLocation) {
-        if (mListener != null && amapLocation != null) {
-            if (amapLocation != null && amapLocation.getErrorCode() == 0) {
-
-                mLocationErrText.setVisibility(View.GONE);
-                LatLng location = new LatLng(amapLocation.getLatitude(), amapLocation.getLongitude());
-
-                amapLocation.getLocationType();//获取当前定位结果来源，如网络定位结果，详见官方定位类型表
-                amapLocation.getLatitude();//获取纬度
-                amapLocation.getAccuracy();//获取精度信息
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                Date date = new Date(amapLocation.getTime());
-                df.format(date);//定位时间
-
-                android.util.Log.i("20170412", "onLocationChanged() location getLocationType -->" + amapLocation.getLocationType());
-                android.util.Log.i("20170412", "onLocationChanged() location getLatitude -->" + amapLocation.getLatitude());
-                android.util.Log.i("20170412", "onLocationChanged() location getAccuracy -->" + amapLocation.getAccuracy());
-                android.util.Log.i("20170412", "onLocationChanged() location time -->" + df.format(date));
-
-                amapLocation.getAddress();//地址，如果option中设置isNeedAddress为false，则没有此结果，网络定位结果中会有地址信息，GPS定位不返回地址信息
-                amapLocation.getCountry();//国家信息
-                amapLocation.getProvince();//省信息
-                amapLocation.getCity();//城市信息
-                amapLocation.getDistrict();//城区信息
-                amapLocation.getStreet();//街道信息
-                amapLocation.getStreetNum();//街道门牌号信息
-                amapLocation.getCityCode();//城市编码
-                amapLocation.getAdCode();//地区编码
-
-                StringBuffer buffer = new StringBuffer();
-                buffer.append(amapLocation.getCountry() + ""
-                        + amapLocation.getProvince() + ""
-                        + amapLocation.getCity() + ""
-                        + amapLocation.getDistrict() + ""
-                        + amapLocation.getStreet() + ""
-                        + amapLocation.getStreetNum());
-
-                android.util.Log.i("20170412", "onLocationChanged() location information -->" + buffer.toString());
-                location_info = buffer.toString();
-
-                if (!mFirstFix) {
-                    mFirstFix = true;
-                    addCircle(location, amapLocation.getAccuracy());//添加精度圆
-                    addMarker(location);//添加定位图标
-                    android.util.Log.i("ly20170511", "use sensor helper to change the direction");
-                    mSensorHelper.setCurrentMarker(mLocMarker);//定位图标旋转
-                    aMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 18));
-                    //mListener.onLocationChanged(amapLocation);//点击定位图标可以将视图移动到定位的位置
-                } else {
-                    mCircle.setCenter(location);
-                    mCircle.setRadius(amapLocation.getAccuracy());
-                    mLocMarker.setPosition(location);
-                    aMap.moveCamera(CameraUpdateFactory.changeLatLng(location));
-                }
-            } else {
-                String errText = "定位失败," + amapLocation.getErrorCode() + ": " + amapLocation.getErrorInfo();
-                android.util.Log.i("AmapErr", errText);
-                mLocationErrText.setVisibility(View.VISIBLE);
-                mLocationErrText.setText(errText);
-            }
-        }
-    }
-
-    /**
-     * 激活定位
-     */
-    @Override
-    public void activate(OnLocationChangedListener listener) {
-        mListener = listener;
-        if (mlocationClient == null) {
-            mlocationClient = new AMapLocationClient(this);
-            mLocationOption = new AMapLocationClientOption();
-            //设置定位监听
-            mlocationClient.setLocationListener(this);
-            //设置为高精度定位模式
-            mLocationOption.setLocationMode(AMapLocationMode.Hight_Accuracy);
-            //设置是否返回位置信息
-            mLocationOption.setNeedAddress(true);
-            //设置定位循环时间
-            mLocationOption.setInterval(1000);
-            //设置定位参数
-            mlocationClient.setLocationOption(mLocationOption);
-            // 此方法为每隔固定时间会发起一次定位请求，为了减少电量消耗或网络流量消耗，
-            // 注意设置合适的定位时间的间隔（最小间隔支持为2000ms），并且在合适时间调用stopLocation()方法来取消定位请求
-            // 在定位结束后，在合适的生命周期调用onDestroy()方法
-            // 在单次定位情况下，定位无论成功与否，都无需调用stopLocation()方法移除请求，定位sdk内部会移除
-            mlocationClient.startLocation();
-        }
-    }
-
-    /**
-     * 停止定位
-     */
-    @Override
-    public void deactivate() {
-//        mListener = null;
-//        if (mlocationClient != null) {
-//            mlocationClient.stopLocation();
-//            mlocationClient.onDestroy();
-//        }
-//        mlocationClient = null;
-        if (mlocationClient != null) {
-            mlocationClient.stopLocation();
-        }
-    }
-
-    private void addCircle(LatLng latlng, double radius) {
-        CircleOptions options = new CircleOptions();
-        options.strokeWidth(1f);
-        options.fillColor(FILL_COLOR);
-        options.strokeColor(STROKE_COLOR);
-        options.center(latlng);
-        options.radius(radius);
-        options.visible(false);
-        mCircle = aMap.addCircle(options);
-    }
-
-    private void addMarker(LatLng latlng) {
-        if (mLocMarker != null) {
-            return;
-        }
-        MarkerOptions options = new MarkerOptions();
-        options.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(this.getResources(),
-                R.mipmap.navi_map_gps_locked)));
-        options.anchor(0.5f, 0.5f);
-        options.position(latlng);
-        mLocMarker = aMap.addMarker(options);
-        if (location_info != null) {
-            mLocMarker.setTitle(location_info);
+        if (amapLocation != null && amapLocation.getErrorCode() == 0) {
+            mLocationErrText.setVisibility(View.GONE);
+            showMapLocation(amapLocation);
         } else {
-            mLocMarker.setTitle(LOCATION_MARKER_FLAG);
+            String errText = "Error code: " + amapLocation.getErrorCode() + ", Location detail: " + amapLocation.getLocationDetail();
+            mLocationErrText.setVisibility(View.VISIBLE);
+            mLocationErrText.setText(errText);
         }
     }
+
+    /**
+     * 切换为高德地图显示
+     */
+    private void showMapLocation(AMapLocation amapLocation) {
+        String type = "amap";
+        if (!amapLocation.getCountry().equals("中国")) {
+            type = "gmap";
+        }
+        if (mMapLocation == null || !mMapLocation.getMapType().equals(type)) {
+            if (mMapLocation != null) {
+                mMapLocation.clear();
+            }
+            mMapLocation = createMapLocation(type);
+        }
+
+        double latitude = amapLocation.getLatitude();
+        double longitude = amapLocation.getLongitude();
+        mMapLocation.moveCamera(latitude, longitude);
+        mMapLocation.drawCurrentMarker(latitude, longitude);
+
+    }
+
+    private MapLocation createMapLocation(String type) {
+        if ("gmap".equals(type)) {
+            mMapLocation = new GMapLocation(this, mContainerLayout);
+        } else {
+            mMapLocation = new com.agold.sos.location.AMapLocation(this, mContainerLayout);
+        }
+        mMapLocation.createMapView();
+        mMapLocation.onCreate(null);
+        mMapLocation.onResume();
+        mMapLocation.addMapView();
+        return mMapLocation;
+    }
+
 
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -824,8 +639,8 @@ public class MainActivity extends AppCompatActivity implements LocationSource,
                 finish();
             } else {
                 android.util.Log.i("ly20170511", "onRequestPermissionsResult we got the permission and we try to refresh the mapview");
-                init();
                 hasLocationPermission = true;
+                mAMapLocationManager.registerLocationListener(this);
             }
         }
     }

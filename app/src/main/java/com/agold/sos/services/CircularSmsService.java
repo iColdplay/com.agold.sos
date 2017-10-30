@@ -1,6 +1,8 @@
 package com.agold.sos.services;
 
 import com.agold.sos.*;
+
+import android.Manifest;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -8,13 +10,19 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.telephony.SmsManager;
 import android.widget.Toast;
 
@@ -29,14 +37,13 @@ import com.amap.api.maps.model.LatLng;
 import java.util.ArrayList;
 
 
-
 import static android.telephony.SmsManager.getDefault;
 
 /**
  * Created by root on 17-5-26.
  */
 
-public class CircularSmsService extends Service{
+public class CircularSmsService extends Service {
 
     private NumberProvider mNumberprovider;
     private Cursor mCursor;
@@ -48,6 +55,9 @@ public class CircularSmsService extends Service{
     private AMapLocationClient mlocationClient;
     private AMapLocationClientOption mLocationOption;
     private static String location_info = null;
+
+    private LocationManager mLocationManager;
+    private Location mLocation;
 
     @Nullable
     @Override
@@ -71,6 +81,7 @@ public class CircularSmsService extends Service{
         }
         smsManager = getDefault();
 
+        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
     }
 
@@ -126,24 +137,24 @@ public class CircularSmsService extends Service{
         mNumberprovider.close();
     }
 
-    private void sendMessage(String location, String position){
+    private void sendMessage(String location, String position) {
         Intent sendSucess = new Intent("agold.sos.sms.send.success");
         PendingIntent pIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, sendSucess, PendingIntent.FLAG_UPDATE_CURRENT);
-        for(int i = 0;i < numbers.size();i++){
-            android.util.Log.i("ly20170430","send message to the --->" + numbers.get(i));
+        for (int i = 0; i < numbers.size(); i++) {
+            android.util.Log.i("ly20170430", "send message to the --->" + numbers.get(i));
             //此处支持自定义短信内容
             try {
-                android.util.Log.i("ly20170718","now we should know the default Subscription-->"+SmsManager.getDefaultSmsSubscriptionId());
-                if(SmsManager.getDefaultSmsSubscriptionId() !=1 && SmsManager.getDefaultSmsSubscriptionId() !=2){
+                android.util.Log.i("ly20170718", "now we should know the default Subscription-->" + SmsManager.getDefaultSmsSubscriptionId());
+                if (SmsManager.getDefaultSmsSubscriptionId() != 1 && SmsManager.getDefaultSmsSubscriptionId() != 2) {
                     Toast.makeText(this, R.string.sms_set_default_id, Toast.LENGTH_SHORT).show();
                     return;
                 }
                 SmsManager duo = SmsManager.getSmsManagerForSubscriptionId(SmsManager.getDefaultSmsSubscriptionId());
                 duo.sendTextMessage(numbers.get(i), null,
                         getString(R.string.sms_help_me) + getString(R.string.sms_location) + location + getString(R.string.sms_position) + position, pIntent, null);
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
-                android.util.Log.i("ly20170718","send sms failed");
+                android.util.Log.i("ly20170718", "send sms failed");
                 Toast.makeText(this, R.string.send_sms_failed, Toast.LENGTH_SHORT).show();
             }
         }
@@ -151,7 +162,7 @@ public class CircularSmsService extends Service{
         this.onDestroy();
     }
 
-    public void locateAndSendMessages(Context context){
+    public void locateAndSendMessages(Context context) {
         mlocationClient = new AMapLocationClient(context);
         mLocationOption = new AMapLocationClientOption();
         //设置定位监听
@@ -159,7 +170,7 @@ public class CircularSmsService extends Service{
             @Override
             public void onLocationChanged(AMapLocation aMapLocation) {
                 LatLng location = new LatLng(aMapLocation.getLatitude(), aMapLocation.getLongitude());
-                android.util.Log.i("ly20170523","show the location info--->"+location.toString());
+                android.util.Log.i("ly20170523", "show the location info--->" + location.toString());
                 aMapLocation.getAddress();//地址，如果option中设置isNeedAddress为false，则没有此结果，网络定位结果中会有地址信息，GPS定位不返回地址信息
                 aMapLocation.getCountry();//国家信息
                 aMapLocation.getProvince();//省信息
@@ -182,9 +193,30 @@ public class CircularSmsService extends Service{
                 location_info = buffer.toString();
                 mlocationClient.stopLocation();
                 mlocationClient.onDestroy();
-                sendMessage(location.toString(),buffer.toString());
-                //SmsService.this.onDestroy();
-                mContext.stopService(new Intent(mContext,SmsService.class));
+                if (location.toString().contains("(0.0,0.0)")) {
+                    android.util.Log.i("ly20171011", "no netWork");
+                    if (mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                        if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                                && ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            // TODO: Consider calling
+                            //    ActivityCompat#requestPermissions
+                            // here to request the missing permissions, and then overriding
+                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                            //                                          int[] grantResults)
+                            // to handle the case where the user grants the permission. See the documentation
+                            // for ActivityCompat#requestPermissions for more details.
+                            return;
+                        }
+                        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+                    }else{
+                        Toast.makeText(mContext, R.string.no_gps_hint, Toast.LENGTH_SHORT);
+                    }
+
+                }else {
+                    sendMessage(location.toString(), buffer.toString());
+                    //SmsService.this.onDestroy();
+                    mContext.stopService(new Intent(mContext, SmsService.class));
+                }
             }
         });
         //设置为高精度定位模式
@@ -201,6 +233,32 @@ public class CircularSmsService extends Service{
 
         mlocationClient.startLocation();
     }
+
+    private final LocationListener locationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            android.util.Log.i("ly20171011", "we got a location by call back");
+            mLocation = location;
+            mLocationManager.removeUpdates(locationListener);
+            String locationInfo = mLocation.getLatitude() + " " + mLocation.getLongitude();
+            sendMessage(locationInfo, " ");
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
+    };
 
 
 }

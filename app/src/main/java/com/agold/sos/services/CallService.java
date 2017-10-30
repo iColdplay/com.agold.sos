@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.UserManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.telephony.PhoneStateListener;
@@ -56,6 +57,16 @@ public class CallService extends Service {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
             android.util.Log.i("ly20170714", " return by permission--->" + "CALL");
             Toast.makeText(this, R.string.no_call_permission, Toast.LENGTH_SHORT).show();
+        }
+        //end
+
+
+        //20170824 solve non user mode issues
+        UserManager userManager = (UserManager) getSystemService(Context.USER_SERVICE);
+        if(!userManager.isSystemUser()){
+            android.util.Log.i("ly20170824", "CallService this is not system user");
+            Toast.makeText(getApplicationContext(), R.string.system_user_hint, Toast.LENGTH_LONG).show();
+            return;
         }
         //end
 

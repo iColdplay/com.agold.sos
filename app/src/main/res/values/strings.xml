@@ -12,7 +12,7 @@
     <string name="fail">FAIL</string>
     <string name="call_dialog_hint">CALL\nYour phone will make phone calls to your emergency contacts</string>
     <string name="no">No</string>
-    <string name="sms_dialog_hint">SMS\nYour phonewill send emergency  to your emergency contacts</string>
+    <string name="sms_dialog_hint">SMS\nYour phone will send emergency  to your emergency contacts</string>
     <string name="sos_dialog_hint">SOS\nAll background applications will be shut down automatically to achieve longer standby time.\nYour handset will send a alert emergency SMS message to the contact person you set up by every 10 minutes. \nYou can release this SOS mode by long pressing the power key.  </string>
     <string name="contact_no_name">No name contact</string>
     <string name="add_contact">Add</string>
@@ -31,4 +31,6 @@
     <string name="send_sms_failed">Send sms failed,please check your network.</string>
     <string name="sms_set_default_id">Please setup your default Sim on SMS.</string>
     <string name="system_user_hint">Only System User!</string>
+    <string name="gps_location_hint">Network is not available, GPS location could be more slow than the network, please wait for a while!</string>
+    <string name="no_gps_hint">No GPS</string>
 </resources>

@@ -31,4 +31,6 @@
     <string name="send_sms_failed">短信发送失败，请检查网络</string>
     <string name="sms_set_default_id">您的求救短信没有发送，请设置您默认发送短信的SIM卡</string>
     <string name="system_user_hint">仅机主可用!</string>
+    <string name="gps_location_hint">网络不可用，当前通过GPS进行定位，这可能需要一些时间，请稍侯！</string>
+    <string name="no_gps_hint">GPS定位功能不可用</string>
 </resources>
