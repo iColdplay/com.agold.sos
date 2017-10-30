@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.UserManager;
 import android.util.StringBuilderPrinter;
 import android.widget.Toast;
 
@@ -41,6 +42,15 @@ public class PhoneWindowManagerReceiver extends BroadcastReceiver {
                 }
             }
             mNumberprovider.close();
+        }
+
+        if(("user.check.callservice").equals(action)){
+            UserManager userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
+            if(userManager.isSystemUser()){
+                Intent callIntent = new Intent();
+                callIntent.setClassName("com.agold.sos", "com.agold.sos.services.CallService");
+                context.startService(callIntent);
+            }
         }
     }
 }

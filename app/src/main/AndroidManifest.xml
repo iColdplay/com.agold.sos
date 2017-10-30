@@ -70,6 +70,7 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="check.emergency.contact" />
+                <action android:name="user.check.callservice" />
             </intent-filter>
         </receiver>
 
